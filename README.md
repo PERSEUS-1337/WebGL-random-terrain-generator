@@ -6,7 +6,7 @@ Welcome to the **Random Terrain Generator** project! This application demonstrat
 ## Authors
 - Aron Resty Ramillano
 - John Maui Borja
-- Angelica Adoptante
+- Angelica Nicolette Adoptante
 - Elijah Gabriel Malazarte
 
 ## Course
@@ -64,6 +64,11 @@ The goal of this project is to create a tool that generates random terrains, whi
    - Use the controls in the WebGL application to navigate and view the generated terrain.
    - Use the export functionality to save the terrain for use in other applications.
 
+## How it Works
+### Terrain Matrix Generation
+The terrain essentially is just a randomly generated matrix with a bunch of values that determine what should be displayed on that specific block and on what specific location.
+
+
 ## Contributing
 Contributions are welcome! Please fork the repository and submit a pull request for any enhancements or bug fixes.
 
@@ -78,3 +83,6 @@ We would like to thank our CMSC 161 instructors and peers for their support and 
 Feel free to reach out if you have any questions or feedback. Enjoy exploring and creating with the Random Terrain Generator!
 
 ---
+
+## Resources
+- https://www.w3schools.com/python/pandas/pandas_dataframes.asp
