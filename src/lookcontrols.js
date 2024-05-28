@@ -1,9 +1,10 @@
 const dragSens = 0.01;
-const panSpeed = 1;
+const panSpeed = 0.1;
 
 let isDragging = false;
 let previousMousePosition = { x: 0, y: 0 };
 let keysPressed = {};
+let timer;
 
 let direction = vec3.subtract([], eyePoint, lookAtPoint);
 vec3.normalize(direction, direction);
@@ -35,6 +36,7 @@ canvas.addEventListener('mousemove', (event) => {
     // Clamp pitch to avoid flipping
     pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch));
 
+    // Update camera position
     let r = Math.sqrt(Math.pow(eyePoint[0]-lookAtPoint[0], 2) + Math.pow(eyePoint[1]-lookAtPoint[1], 2) + Math.pow(eyePoint[2]-lookAtPoint[2], 2))
     eyePoint = [
         r * Math.cos(pitch) * Math.sin(yaw) + lookAtPoint[0],
@@ -48,44 +50,56 @@ canvas.addEventListener('mousemove', (event) => {
 // Keyboard event listeners
 window.addEventListener('keydown', (event) => {
     keysPressed[event.key] = true;
-    panCamera();
+    if (timer) return;
+    timer = setInterval(panCamera, 16);
 });
 
 window.addEventListener('keyup', (event) => {
     keysPressed[event.key] = false;
+    clearInterval(timer);
+    timer = null;
 });
 
 function panCamera() {
+    // Move forward
     if (keysPressed['w']) {
         eyePoint[2] -= panSpeed * Math.cos(yaw);
         eyePoint[0] -= panSpeed * Math.sin(yaw);
-
         lookAtPoint[2] -= panSpeed * Math.cos(yaw);
         lookAtPoint[0] -= panSpeed * Math.sin(yaw);
     }
+    // Move backward
     if (keysPressed['s']) {
         eyePoint[2] += panSpeed * Math.cos(yaw);
         eyePoint[0] += panSpeed * Math.sin(yaw);
-
         lookAtPoint[2] += panSpeed * Math.cos(yaw);
         lookAtPoint[0] += panSpeed * Math.sin(yaw);
     }
+    // Move left
     if (keysPressed['a']) {
         eyePoint[2] += panSpeed * Math.sin(yaw);
         eyePoint[0] -= panSpeed * Math.cos(yaw);
-
         lookAtPoint[2] += panSpeed * Math.sin(yaw);
         lookAtPoint[0] -= panSpeed * Math.cos(yaw);
     }
+    // Move right
     if (keysPressed['d']) {
         eyePoint[2] -= panSpeed * Math.sin(yaw);
         eyePoint[0] += panSpeed * Math.cos(yaw);
-
         lookAtPoint[2] -= panSpeed * Math.sin(yaw);
         lookAtPoint[0] += panSpeed * Math.cos(yaw);
     }
+    // Move down
+    if (keysPressed['q']) {
+        eyePoint[1] -= panSpeed;
+        lookAtPoint[1] -= panSpeed;
+    }
+    // Move up
+    if (keysPressed['e']) {
+        eyePoint[1] += panSpeed;
+        lookAtPoint[1] += panSpeed;
+    }
 
-    console.log(eyePoint[0], eyePoint[2])
     updateCamera();
 }
 
