@@ -37,9 +37,9 @@ canvas.addEventListener('mousemove', (event) => {
 
     let r = Math.sqrt(Math.pow(eyePoint[0]-lookAtPoint[0], 2) + Math.pow(eyePoint[1]-lookAtPoint[1], 2) + Math.pow(eyePoint[2]-lookAtPoint[2], 2))
     eyePoint = [
-        r * Math.cos(pitch) * Math.sin(yaw),
-        r * Math.sin(pitch),
-        r * Math.cos(pitch) * Math.cos(yaw)
+        r * Math.cos(pitch) * Math.sin(yaw) + lookAtPoint[0],
+        r * Math.sin(pitch) + lookAtPoint[1],
+        r * Math.cos(pitch) * Math.cos(yaw) + lookAtPoint[2]
     ]
 
     updateCamera();
@@ -48,29 +48,41 @@ canvas.addEventListener('mousemove', (event) => {
 // Keyboard event listeners
 window.addEventListener('keydown', (event) => {
     keysPressed[event.key] = true;
-    updateCameraPosition();
+    panCamera();
 });
 
 window.addEventListener('keyup', (event) => {
     keysPressed[event.key] = false;
 });
 
-function updateCameraPosition() {
+function panCamera() {
     if (keysPressed['w']) {
         eyePoint[2] -= panSpeed * Math.cos(yaw);
         eyePoint[0] -= panSpeed * Math.sin(yaw);
+
+        lookAtPoint[2] -= panSpeed * Math.cos(yaw);
+        lookAtPoint[0] -= panSpeed * Math.sin(yaw);
     }
     if (keysPressed['s']) {
         eyePoint[2] += panSpeed * Math.cos(yaw);
         eyePoint[0] += panSpeed * Math.sin(yaw);
+
+        lookAtPoint[2] += panSpeed * Math.cos(yaw);
+        lookAtPoint[0] += panSpeed * Math.sin(yaw);
     }
     if (keysPressed['a']) {
         eyePoint[2] += panSpeed * Math.sin(yaw);
         eyePoint[0] -= panSpeed * Math.cos(yaw);
+
+        lookAtPoint[2] += panSpeed * Math.sin(yaw);
+        lookAtPoint[0] -= panSpeed * Math.cos(yaw);
     }
     if (keysPressed['d']) {
         eyePoint[2] -= panSpeed * Math.sin(yaw);
         eyePoint[0] += panSpeed * Math.cos(yaw);
+
+        lookAtPoint[2] -= panSpeed * Math.sin(yaw);
+        lookAtPoint[0] += panSpeed * Math.cos(yaw);
     }
 
     console.log(eyePoint[0], eyePoint[2])
