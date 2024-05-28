@@ -1,11 +1,14 @@
+const dragSens = 0.01;
+const panSpeed = 1;
+
 let isDragging = false;
 let previousMousePosition = { x: 0, y: 0 };
-let direction = vec3.subtract([], eyePoint, lookAtPoint /*, eyePoint*/);
+let keysPressed = {};
+
+let direction = vec3.subtract([], eyePoint, lookAtPoint);
 vec3.normalize(direction, direction);
 let yaw = Math.atan2(direction[0], direction[2]);   // Horizontal rotation
-// let pitch = Math.asin(direction[1]); // Vertical rotation
-let pitch = Math.atan2(direction[1], direction[2]); // Vertical rotation
-console.log(yaw, pitch)
+let pitch = Math.asin(direction[1]); // Vertical rotation
 
 canvas.addEventListener('mousedown', (event) => {
     isDragging = true;
@@ -20,74 +23,63 @@ canvas.addEventListener('mouseup', () => {
 canvas.addEventListener('mousemove', (event) => {
     if (!isDragging) return;
 
-    let deltaX = event.clientX - previousMousePosition.x;
+    let deltaX = -(event.clientX - previousMousePosition.x);
     let deltaY = event.clientY - previousMousePosition.y;
     previousMousePosition.x = event.clientX;
     previousMousePosition.y = event.clientY;
 
     // Update yaw and pitch based on mouse movement
-    yaw += deltaX * 0.01; // Adjust sensitivity as needed
-    pitch += deltaY * 0.01; // Adjust sensitivity as needed
+    yaw += deltaX * dragSens;
+    pitch += deltaY * dragSens;
 
     // Clamp pitch to avoid flipping
     pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch));
 
+    let r = Math.sqrt(Math.pow(eyePoint[0]-lookAtPoint[0], 2) + Math.pow(eyePoint[1]-lookAtPoint[1], 2) + Math.pow(eyePoint[2]-lookAtPoint[2], 2))
+    eyePoint = [
+        r * Math.cos(pitch) * Math.sin(yaw),
+        r * Math.sin(pitch),
+        r * Math.cos(pitch) * Math.cos(yaw)
+    ]
+
     updateCamera();
 });
 
-// function calculateDirection(yaw, pitch) {
-//     return [
-//         Math.cos(pitch) * Math.sin(yaw),
-//         Math.sin(pitch),
-//         Math.cos(pitch) * Math.cos(yaw)
-//     ];
-// }
+// Keyboard event listeners
+window.addEventListener('keydown', (event) => {
+    keysPressed[event.key] = true;
+    updateCameraPosition();
+});
 
-// function calculateRightVector(direction) {
-//     return [
-//         Math.sin(direction - Math.PI / 2.0),
-//         0,
-//         Math.cos(direction - Math.PI / 2.0)
-//     ];
-// }
+window.addEventListener('keyup', (event) => {
+    keysPressed[event.key] = false;
+});
 
-// function calculateUpVector(direction, right) {
-//     return vec3.cross([], right, direction);
-// }
+function updateCameraPosition() {
+    if (keysPressed['w']) {
+        eyePoint[2] -= panSpeed * Math.cos(yaw);
+        eyePoint[0] -= panSpeed * Math.sin(yaw);
+    }
+    if (keysPressed['s']) {
+        eyePoint[2] += panSpeed * Math.cos(yaw);
+        eyePoint[0] += panSpeed * Math.sin(yaw);
+    }
+    if (keysPressed['a']) {
+        eyePoint[2] += panSpeed * Math.sin(yaw);
+        eyePoint[0] -= panSpeed * Math.cos(yaw);
+    }
+    if (keysPressed['d']) {
+        eyePoint[2] -= panSpeed * Math.sin(yaw);
+        eyePoint[0] += panSpeed * Math.cos(yaw);
+    }
 
-function updateCamera() {
-    // Calculate the new camera direction based on yaw and pitch
-    // let direction = [
-    //     Math.cos(pitch) * Math.sin(yaw),
-    //     Math.sin(pitch),
-    //     Math.cos(pitch) * Math.cos(yaw)
-    // ];
+    console.log(eyePoint[0], eyePoint[2])
+    updateCamera();
+}
 
-    // let direction = calculateDirection(yaw, pitch);
-    // let right = calculateRightVector(direction);
-    // let up = calculateUpVector(direction, right);
-
-    // Recalculate the camera target
-    // let newTarget = [
-    //     eyePoint[0] + direction[0],
-    //     eyePoint[1] + direction[1],
-    //     eyePoint[2] + direction[2]
-    // ];
-
-    console.log(yaw, pitch)
-    // console.log(viewMatrix);
-
-    // Update the view matrix (assuming you have a utility function for this)
-    // viewMatrix = mat4.lookAt(mat4.create(), eyePoint, newTarget, upVector);
-
-    let viewMatrix = mat4.create();
-    mat4.rotateX(viewMatrix, viewMatrix, pitch);
-    mat4.rotateY(viewMatrix, viewMatrix, yaw);
-    mat4.translate(viewMatrix, viewMatrix, [-eyePoint[0], -eyePoint[1], -eyePoint[2]]);
-
-    // Use the view matrix in your shader program
+// Update the view matrix
+function updateCamera() {    
+    viewMatrix = mat4.lookAt(mat4.create(), eyePoint, lookAtPoint, upVector);
     gl.uniformMatrix4fv(uViewMatrixPointer, false, viewMatrix);
-
-    // Render the scene with the new camera settings
     drawScene();
 }
