@@ -1,54 +1,26 @@
 // Function to display the matrix on the web page
 function displayMatrix(matrix) {
-	const container = document.getElementById("matrix-container");
-	const table = document.createElement("table");
+  const container = document.getElementById("matrix-container");
+  container.innerHTML = ""; // Clear previous content
+  const table = document.createElement("table");
 
-	// Create table headers
-	const headerRow = document.createElement("tr");
-	const th = document.createElement("th");
-	th.appendChild(document.createTextNode(" "));
-	headerRow.appendChild(th);
-	for (let j = 1; j <= matrix[0].length; j++) {
-		const th = document.createElement("th");
-		th.appendChild(document.createTextNode(j));
-		headerRow.appendChild(th);
-	}
-	table.appendChild(headerRow);
+  // Create table rows
+  for (let i = 0; i < matrix.length; i++) {
+    const row = document.createElement("tr");
+    for (let j = 0; j < matrix[i].length; j++) {
+      const cell = document.createElement("td");
+      const cellData = matrix[i][j];
+      cell.style.backgroundColor = `rgb(${Math.floor(
+        (cellData / MAX_ELEV) * 255
+      )}, ${Math.floor((cellData / MAX_ELEV) * 255)}, ${Math.floor(
+        (cellData / MAX_ELEV) * 255
+      )})`;
+      row.appendChild(cell);
+    }
+    table.appendChild(row);
+  }
 
-	// Find the maximum value in the matrix
-	let maxVal = -Infinity;
-	for (let i = 0; i < matrix.length; i++) {
-		for (let j = 0; j < matrix[i].length; j++) {
-			if (matrix[i][j] > maxVal) {
-				maxVal = matrix[i][j];
-			}
-		}
-	}
-
-	// Create table rows
-	for (let i = 0; i < matrix.length; i++) {
-		const row = document.createElement("tr");
-
-		const rowIndexCell = document.createElement("td");
-		rowIndexCell.appendChild(document.createTextNode(i + 1));
-		row.appendChild(rowIndexCell);
-
-		for (let j = 0; j < matrix[i].length; j++) {
-			const cell = document.createElement("td");
-			const cellData = matrix[i][j];
-			cell.appendChild(document.createTextNode(cellData.toFixed(0)));
-
-			// Set cell background color based on the value
-			const brightness = (cellData / maxVal) * 100; // Normalize to percentage
-			cell.style.backgroundColor = `hsl(40, 100%, ${brightness}%)`; // Blue color with varying brightness
-
-			row.appendChild(cell);
-		}
-
-		table.appendChild(row);
-	}
-
-	container.appendChild(table);
+  container.appendChild(table);
 }
 
 function getRandomFloat(min, max) {
@@ -203,26 +175,68 @@ function randTerrainInter(matx, n, anchors) {
 
 // ### END OF FUNCTION DECLARATIONS
 
-// Define the dimensions of the matrix
-const N = 101; // Size of n x n matrix; n+1 always
-const MAX_ELEV = 25;	
-
-const ANCHOR_PERCENT = 0.01;
+// Define default values for the matrix
+let N = 101;
+let MAX_ELEV = 25;
+let ANCHOR_PERCENT = 0.01;
 let anchorCount = Math.floor(N * N * ANCHOR_PERCENT);
 let randomCoordinates = getRandomCoordinates(N, anchorCount);
 
-
-// Initialize the matrix with heights from the heightmap
+// Initialize the matrices
 let matx = Array.from({ length: N }, () => Array(N).fill(0));
 let randMatx = Array.from({ length: N }, () => Array(N).fill(0));
 
-
+// Functions to populate and interpolate the matrices
 populateMatx(matx, N);
 terrainInter(matx, N);
 randPopulateMatx(randMatx, N, randomCoordinates);
 randTerrainInter(randMatx, N, randomCoordinates);
 
-// Display the matrix
+// Function to display the matrix
 document.addEventListener("DOMContentLoaded", () => {
-  	displayMatrix(randMatx);
+  let currentMatrixType = "randMatx"; // Variable to track the currently displayed matrix type
+
+  // Display the initial matrix
+  displayMatrix(randMatx);
+
+  // Event listener for the regenerate button
+  document.getElementById("regenerate-button").addEventListener("click", () => {
+    N = parseInt(document.getElementById("matrix-size").value);
+    MAX_ELEV = parseInt(document.getElementById("max-elevation").value);
+    ANCHOR_PERCENT = parseFloat(
+      document.getElementById("anchor-percent").value
+    );
+
+    anchorCount = Math.floor(N * N * ANCHOR_PERCENT);
+    randomCoordinates = getRandomCoordinates(N, anchorCount);
+
+    matx = Array.from({ length: N }, () => Array(N).fill(0));
+    randMatx = Array.from({ length: N }, () => Array(N).fill(0));
+
+    populateMatx(matx, N);
+    terrainInter(matx, N);
+    randPopulateMatx(randMatx, N, randomCoordinates);
+    randTerrainInter(randMatx, N, randomCoordinates);
+
+    // Display the matrix based on the currentMatrixType
+    if (currentMatrixType === "randMatx") {
+      displayMatrix(randMatx);
+    } else {
+      displayMatrix(matx);
+    }
+  });
+
+  // Event listener for the toggle button
+  document.getElementById("toggle-button").addEventListener("click", () => {
+    const container = document.getElementById("matrix-container");
+    if (currentMatrixType === "randMatx") {
+      displayMatrix(matx);
+      container.dataset.display = "matx";
+      currentMatrixType = "matx"; // Update the current matrix type
+    } else {
+      displayMatrix(randMatx);
+      container.dataset.display = "randMatx";
+      currentMatrixType = "randMatx"; // Update the current matrix type
+    }
+  });
 });
