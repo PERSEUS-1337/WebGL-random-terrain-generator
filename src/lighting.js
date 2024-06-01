@@ -43,17 +43,18 @@ timeSlider.addEventListener('input', function() {
 //day night cycle
 let active = true;
 async function dayNightCycle() {
-    let mins = 100;
-
+    
     while  (active)  {
         // Your loop code here
         // Example loop body (to avoid infinite loop in this example)
+        let mins = parseInt(timeSlider.value, 10);
         mins += 25;
         if (mins > totalMinutesInADay){
             mins -= totalMinutesInADay;
         }
-        getLightingColorBasedOnTime(mins);
-        console.log("LMAO");
+        timeSlider.value = mins;
+        timeSlider.dispatchEvent(new Event('input', {bubbles: true, cancelable: true}));
+
         // This is just to simulate a delay in the loop
         await new Promise(resolve => setTimeout(resolve, 900));
     }
