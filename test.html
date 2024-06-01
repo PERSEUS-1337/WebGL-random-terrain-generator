@@ -47,10 +47,55 @@
     <script src="./lib/webgl-utils.js"></script>
     <script src="./lib/webgl-debug.js"></script>
     <script src="./lib/gl-matrix-min.js"></script>
+
+    <script src="./src/rng.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Terrain Generator</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* Prevent scrollbars */
+            background-color: #000000;
+            position: relative; /* Make body the positioning context */
+        }
+        canvas {
+            display: block; /* Ensure canvas is treated as a block element */
+            border: 1px black solid;
+            width: 100vw; /* Full width of viewport */
+            height: 100vh; /* Full height of viewport */
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .controls {
+            position: absolute;
+            top: 20px; /* Adjust the top position as needed */
+            left: 20px; /* Adjust the left position as needed */
+            color: #ffffff; /* White text color */
+            z-index: 1; /* Ensure controls render on top of the canvas */
+        }
+    </style>
 </head>
 
 <body>
-    <canvas id="main_canvas" width="800" height="800" style="border: 1px black solid;"></canvas>
+    <div class="controls">
+        <label for="matrix-size">Matrix Size (N):</label>
+        <input type="number" id="matrix-size" value="100" min="10" step="1">
+        <br>
+        <label for="max-elevation">Max Elevation:</label>
+        <input type="number" id="max-elevation" value="10" min="1" step="1">
+        <br>
+        <label for="anchor-percent">Anchor Percent:</label>
+        <input type="number" id="anchor-percent" value="0.01" min="0.01" max="1" step="0.01">
+        <br>
+        <button id="regenerate-button">Regenerate</button>
+    </div>
+    <canvas id="main_canvas" width="1280" height="720"></canvas>
 
     <script>
         var canvas = document.getElementById("main_canvas");
@@ -94,8 +139,8 @@
         gl.uniformMatrix4fv(uProjectionMatrixPointer, false, projectionMatrix);
 
         /**START VIEW MATRIX SPECIFICATION**/
-        var lookAtPoint = [0.0, 0.0, 0.0, 1.0];              //where the camera is looking
-        var eyePoint = [-6.0, 8.0, -10.0, 1.0];              //where the camera is placed
+        var lookAtPoint = [-8.0, 0.0, -8.0, 1.0];              //where the camera is looking
+        var eyePoint = [10.0, 8.0, 10.0, 1.0];              //where the camera is placed
         var upVector = [0.0, 1.0, 0.0, 0.0];              //orientation of the camera
 
         viewMatrix = mat4.create();
@@ -111,9 +156,9 @@
         mat4.transpose(normalMatrix, normalMatrix);
         gl.uniformMatrix4fv(uNormalMatrixPointer, false, normalMatrix);
 
-        gl.uniform4f(uMaterialDiffuseColorPtr, 0.0, 1.0, 0.0, 1.0);
+        gl.uniform4f(uMaterialDiffuseColorPtr, 0.596, 0.576, 0.855, 1.0);
         gl.uniform4f(uLightDiffuseColorPtr, 1.0, 1.0, 1.0, 1.0);
-        gl.uniform4f(uLightDirectionVectorPtr, 5.0, -5.0, 5.0, 0.0);
+        gl.uniform4f(uLightDirectionVectorPtr, -5.0, -3.0, 2.0, 0.0);
 
         var vertices = [
             -1.0, -1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0,
@@ -144,7 +189,7 @@
             -1.0, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 1.0
         ];
 
-        const numCubes = 101;
+        var numCubes = parseFloat(document.getElementById("matrix-size").value);
         const cubeSize = 0.2;
 
         var allNormals = [];
@@ -152,17 +197,17 @@
             allNormals.push(...normals);
         }
 
-        // Generate a random height increment between 0.1 and 1
-        var offsets = [];
-        for (var row = 0; row < numCubes; row++) {
-            for (var col = 0; col < numCubes; col++) {
-                var height = 0.1 + Math.random() * 0.9; // Height between 0.1 and 1
-                var x = col * cubeSize * 1 - numCubes * cubeSize;
-                var y = height * cubeSize; // Apply height directly
-                var z = row * cubeSize * 1 - numCubes * cubeSize;
-                offsets.push(x, y, z);
-            }
-        }
+        // RNG HEIGHT GENERATION
+        MAX_ELEV = parseFloat(document.getElementById("max-elevation").value);
+        ANCHOR_PERCENT = parseFloat(document.getElementById("anchor-percent").value);
+        let anchorCount = Math.floor(numCubes * numCubes * ANCHOR_PERCENT);
+        let randomCoordinates = getRandomCoordinates(numCubes, anchorCount);
+        let randMatx = Array.from({ length: numCubes }, () => Array(numCubes).fill(0));
+        randPopulateMatx(randMatx, randomCoordinates, MAX_ELEV);
+        randTerrainInter(randMatx, numCubes, randomCoordinates);
+        
+        
+        
 
         var cubeColors = [];
         // Generate random colors for each cube
@@ -176,7 +221,18 @@
         var normalBuffer = gl.createBuffer();
         var offsetBuffer = gl.createBuffer();
 
-        function drawScene(){        
+        function drawScene() {
+            var offsets = [];
+            for (var row = 0; row < numCubes; row++) {
+                for (var col = 0; col < numCubes; col++) {
+                    var height = randMatx[row][col]
+                    var x = col * cubeSize * 1 - numCubes * cubeSize;
+                    var y = height * cubeSize; // Apply height directly
+                    var z = row * cubeSize * 1 - numCubes * cubeSize;
+                    offsets.push(x, y, z);
+                }
+            }
+                 
             gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 
@@ -213,9 +269,28 @@
         }
 
         drawScene();
+
+        document.getElementById("regenerate-button").addEventListener("click", () => {
+            // Fetch new values for the matrix
+            numCubes = parseInt(document.getElementById("matrix-size").value);
+            MAX_ELEV = parseInt(document.getElementById("max-elevation").value);
+            ANCHOR_PERCENT = parseFloat(
+                document.getElementById("anchor-percent").value
+            );
+            console.log(numCubes, MAX_ELEV, ANCHOR_PERCENT);
+
+            // Reinitialize the matrices
+            anchorCount = Math.floor(numCubes * numCubes * ANCHOR_PERCENT);
+            randomCoordinates = getRandomCoordinates(numCubes, anchorCount);
+            randMatx = Array.from({ length: numCubes }, () => Array(numCubes).fill(0));
+            randPopulateMatx(randMatx, randomCoordinates, MAX_ELEV);
+            randTerrainInter(randMatx, numCubes, randomCoordinates);
+
+            // displayMatrix(randMatx);
+            drawScene();
+        });
     </script>
-<script src="./src/lookcontrols.js"></script>
+    <script src="./src/lookcontrols.js"></script>
 
 </body>
-
 </html>

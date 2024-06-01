@@ -15,6 +15,7 @@ function displayMatrix(matrix) {
       )}, ${Math.floor((cellData / MAX_ELEV) * 255)}, ${Math.floor(
         (cellData / MAX_ELEV) * 255
       )})`;
+      cell.textContent = cellData.toFixed(2); // Display the data inside the cell
       row.appendChild(cell);
     }
     table.appendChild(row);
@@ -24,8 +25,8 @@ function displayMatrix(matrix) {
   console.log(matrix);
 }
 
-function getRandomFloat(min, max) {
-  return Math.random() * (max - min) + min;
+function getRandomFloat(max) {
+  return Math.random() * max;
 }
 
 function getRandomInt(max) {
@@ -56,7 +57,7 @@ function getRandomCoordinates(n, count) {
 // Function to populate matrix with random elevations at random coordinates
 function randPopulateMatx(matx, coordinates, max) {
   coordinates.forEach((coord) => {
-    matx[coord.x][coord.y] = getRandomInt(max);
+    matx[coord.x][coord.y] = getRandomFloat(max);
   });
 }
 
@@ -72,7 +73,6 @@ function findClosestAnchors(i, j, anchors) {
   return sortedAnchors.slice(0, 4);
 }
 
-// Function to interpolate terrain based on random anchors
 function randTerrainInter(matx, n, anchors) {
   for (let i = 0; i < n; i++) {
     for (let j = 0; j < n; j++) {
@@ -98,13 +98,12 @@ function randTerrainInter(matx, n, anchors) {
 // ### END OF FUNCTION DECLARATIONS
 
 // Define default values for the matrix
-let N = 75;
+let N = 50;
 let MAX_ELEV = 25;
 let ANCHOR_PERCENT = 0.01;
 
 // Function to display the matrix
 document.addEventListener("DOMContentLoaded", () => {
-  
   // Initialize the matrices
   let anchorCount = Math.floor(N * N * ANCHOR_PERCENT);
   let randomCoordinates = getRandomCoordinates(N, anchorCount);
@@ -131,6 +130,6 @@ document.addEventListener("DOMContentLoaded", () => {
     randPopulateMatx(randMatx, randomCoordinates, MAX_ELEV);
     randTerrainInter(randMatx, N, randomCoordinates);
 
-    displayMatrix(randMatx)
+    displayMatrix(randMatx);
   });
 });
