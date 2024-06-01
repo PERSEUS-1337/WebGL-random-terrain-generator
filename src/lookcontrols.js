@@ -1,5 +1,6 @@
 const dragSens = 0.01;
 const panSpeed = 0.1;
+const zoomMult = 0.95;
 
 let isDragging = false;
 let previousMousePosition = { x: 0, y: 0 };
@@ -10,7 +11,22 @@ let direction = vec3.subtract([], eyePoint, lookAtPoint);
 vec3.normalize(direction, direction);
 let yaw = Math.atan2(direction[0], direction[2]);   // Horizontal rotation
 let pitch = Math.asin(direction[1]); // Vertical rotation
+let zoom = 1.0;
 
+// Zoom by scrolling up/down
+canvas.addEventListener('wheel', (event) => {
+    if (event.deltaY < 0) {
+        zoom *= zoomMult;
+    } else {
+        zoom /= zoomMult;
+    }
+
+    mat4.perspective(projectionMatrix, glMatrix.toRadian(30)*zoom, canvas.width / canvas.height, 1, 1000);
+    gl.uniformMatrix4fv(uProjectionMatrixPointer, false, projectionMatrix);
+    drawScene();
+});
+
+// Event listeners for clicking on canvas
 canvas.addEventListener('mousedown', (event) => {
     isDragging = true;
     previousMousePosition.x = event.clientX;
@@ -21,6 +37,7 @@ canvas.addEventListener('mouseup', () => {
     isDragging = false;
 });
 
+// Rotating by dragging on canvas
 canvas.addEventListener('mousemove', (event) => {
     if (!isDragging) return;
 
@@ -47,7 +64,7 @@ canvas.addEventListener('mousemove', (event) => {
     updateCamera();
 });
 
-// Keyboard event listeners
+// Keyboard event listeners for panning
 window.addEventListener('keydown', (event) => {
     keysPressed[event.key] = true;
     if (timer) return;
@@ -60,6 +77,7 @@ window.addEventListener('keyup', (event) => {
     timer = null;
 });
 
+// Pan Camera (WASD - forward/left/backward/right, QE - descend/ascend)
 function panCamera() {
     // Move forward
     if (keysPressed['w']) {
