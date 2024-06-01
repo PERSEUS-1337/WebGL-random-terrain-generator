@@ -101,11 +101,11 @@
         <button id="regenerate-button">Regenerate</button>
         
         <br><br>
-        <button id="dayNightCycle">Day Night Cycle</button>
-
         <label>Time:</label>
         <span id="timeDisplay">12:00</span>
         <input class='range' type="range" id="timeSlider" min="0" max="1440" step="1" value="720">
+        <br>
+        <button id="dayNightCycle">Start Day/Night Cycle</button>
     </div>
     <canvas id="main_canvas" width="1280" height="720"></canvas>
 
@@ -171,7 +171,7 @@
         gl.uniformMatrix4fv(uNormalMatrixPointer, false, normalMatrix);
 
         var lightDiffuseColor = [1.0, 1.0, 1.0, 1.0];
-        var lightDirection = [-6.12, -10.0, 2.0, 0.0];
+        var lightDirection = [0, -1, 0.75, 0.0];
         var lightAmbient = [0.1, 0.1, 0.1, 1.0];
 
         gl.uniform4f(uMaterialDiffuseColorPtr, 0.596, 0.576, 0.855, 1.0);

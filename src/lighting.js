@@ -6,6 +6,10 @@ const skyBlue = [0.8235, 0.9686, 1, 1]; // #D2F7FF RGBA(210, 247, 255, 1)
 const darkBlue = [0.0824, 0.1333, 0.2196, 1]; // #152238 RGBA(21, 34, 56, 1)
 const skyGradient = [(skyBlue[0]-darkBlue[0])/(totalMinutesInADay/2), (skyBlue[1]-darkBlue[1])/(totalMinutesInADay/2), (skyBlue[2]-darkBlue[2])/(totalMinutesInADay/2)];
 
+let active = false;
+let timeRatio = 41.67;
+let mins;
+
 function getLightingColorBasedOnTime(timeInMinutes) {
     let r, g, b;
     let angle = (timeInMinutes / totalMinutesInADay) * 2 * Math.PI;  // Convert time to angle in radians
@@ -41,14 +45,10 @@ timeSlider.addEventListener('input', function() {
 });
 
 //day night cycle
-let active = true;
 async function dayNightCycle() {
-    
     while  (active)  {
-        // Your loop code here
-        // Example loop body (to avoid infinite loop in this example)
-        let mins = parseInt(timeSlider.value, 10);
-        mins += 25;
+        // update minutes in time
+        mins = parseInt(timeSlider.value, 10) + 1;
         if (mins > totalMinutesInADay){
             mins -= totalMinutesInADay;
         }
@@ -56,18 +56,18 @@ async function dayNightCycle() {
         timeSlider.dispatchEvent(new Event('input', {bubbles: true, cancelable: true}));
 
         // This is just to simulate a delay in the loop
-        await new Promise(resolve => setTimeout(resolve, 900));
+        await new Promise(resolve => setTimeout(resolve, timeRatio));
     }
-
-    console.log('Day/Night cycle stopped.');
 }
 
+// toggle day night cycle
 const dayNightCycleButton = document.getElementById('dayNightCycle');
 dayNightCycleButton.addEventListener('click', function() {
     active = !active;
     if (active){
         dayNightCycle();
+        dayNightCycleButton.textContent = "Stop Day/Night Cycle"
+    } else {
+        dayNightCycleButton.textContent = "Start Day/Night Cycle"
     }
 });
-dayNightCycle();
-
