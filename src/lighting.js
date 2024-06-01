@@ -1,32 +1,31 @@
 const timeSlider = document.getElementById('timeSlider');
 const timeDisplay = document.getElementById('timeDisplay');
+const totalMinutesInADay = 1440;
+const skyBlue = [0.8235, 0.9686, 1, 1]; // #D2F7FF RGBA(210, 247, 255, 1)
+const darkBlue = [0.0824, 0.1333, 0.2196, 1]; // #152238 RGBA(21, 34, 56, 1)
+const skyGradient = [(skyBlue[0]-darkBlue[0])/(totalMinutesInADay/2), (skyBlue[1]-darkBlue[1])/(totalMinutesInADay/2), (skyBlue[2]-darkBlue[2])/(totalMinutesInADay/2)];
 
 function getLightingColorBasedOnTime(timeInMinutes) {
-    const totalMinutesInADay = 1440;
-    const lightDistMult = 10;
-    const angle = (timeInMinutes / totalMinutesInADay) * 2 * Math.PI;  // Convert time to angle in radians
+    let r, g, b;
+    let angle = (timeInMinutes / totalMinutesInADay) * 2 * Math.PI;  // Convert time to angle in radians
 
     // Compute the sun's position in the sky
-    lightDirection = [-Math.cos(angle - Math.PI / 2)*lightDistMult, -Math.sin(angle - Math.PI / 2)*lightDistMult, 0.75, 0.0];
-    console.log(lightDirection)
+    lightDirection = [-Math.cos(angle - Math.PI / 2), -Math.sin(angle - Math.PI / 2), 0.75, 0.0];
 
-    // if (timeInMinutes >= 360 && timeInMinutes < 1080) {
-    //     // Daytime lighting
-    //     lightAmbient = [0.25, 0.25, 0.25, 1.0];
-    //     lightDiffuseColor = [1.0, 1.0, 1.0, 1.0];
-    // } else {
-    //     // Nighttime lighting
-    //     lightAmbient = [0.1, 0.1, 0.1, 1.0];
-    //     lightDiffuseColor = [0.5, 0.5, 0.7, 1.0];
-    // }
+    // Compute sky color depending on time
+    if (timeInMinutes <= totalMinutesInADay/2){
+        r = timeInMinutes*skyGradient[0]+darkBlue[0];
+        g = timeInMinutes*skyGradient[1]+darkBlue[1];
+        b = timeInMinutes*skyGradient[2]+darkBlue[2]
+    } else {
+        r = (totalMinutesInADay-timeInMinutes)*skyGradient[0]+darkBlue[0];
+        g = (totalMinutesInADay-timeInMinutes)*skyGradient[1]+darkBlue[1];
+        b = (totalMinutesInADay-timeInMinutes)*skyGradient[2]+darkBlue[2];
+    }
+    skyColor = [r, g, b, 1];
 
-    // gl.uniform4fv(uLightDiffuseColorPtr, lightDiffuseColor);
-    // gl.uniform4fv(uAmbientLightPtr, lightAmbient);
     gl.uniform4fv(uLightDirectionVectorPtr, lightDirection);
-
     drawScene();
-
-    // return { ambientLight, directionalLightColor, directionalVector };
 }
 
 timeSlider.addEventListener('input', function() {

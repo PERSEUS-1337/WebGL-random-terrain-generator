@@ -127,7 +127,8 @@
         var uLightDirectionVectorPtr = gl.getUniformLocation(program, "uLightDirectionVector");
         var uAmbientLightPtr = gl.getUniformLocation(program, "uAmbientLight");
 
-        gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        var skyColor = [0.8235, 0.9686, 1, 1];
+        gl.clearColor(skyColor[0], skyColor[1], skyColor[2], skyColor[3]);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.enable(gl.DEPTH_TEST);
 
@@ -270,6 +271,7 @@
             gl.enableVertexAttribArray(aOffsetPointer);
             gl.vertexAttribDivisor(aOffsetPointer, 1);  // This tells WebGL to use this attribute as instanced data
 
+            gl.clearColor(skyColor[0], skyColor[1], skyColor[2], skyColor[3]);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
             if (gl.drawArraysInstanced) {
