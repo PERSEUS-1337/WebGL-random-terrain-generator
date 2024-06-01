@@ -62,7 +62,7 @@ function randPopulateMatx(matx, coordinates, max) {
 }
 
 // Function to find the four closest anchor points for interpolation
-function findClosestAnchors(i, j, anchors) {
+function findClosestAnchors(i, j, anchors, count) {
   let sortedAnchors = anchors
     .map((anchor) => ({
       ...anchor,
@@ -70,20 +70,20 @@ function findClosestAnchors(i, j, anchors) {
     }))
     .sort((a, b) => a.distance - b.distance);
 
-  return sortedAnchors.slice(0, 4);
+  return sortedAnchors.slice(0, count);
 }
 
-function randTerrainInter(matx, n, anchors) {
+function randTerrainInter(matx, n, anchors, count) {
   for (let i = 0; i < n; i++) {
     for (let j = 0; j < n; j++) {
       if (matx[i][j] === 0) {
         // Only interpolate uninitialized points
-        let closestAnchors = findClosestAnchors(i, j, anchors);
+        let closestAnchors = findClosestAnchors(i, j, anchors, count);
         let totalWeight = 0;
         let weightedElevation = 0;
 
         closestAnchors.forEach((anchor) => {
-          let distance = Math.abs(anchor.x - i) + Math.abs(anchor.y - j);
+          let distance = Math.sqrt(Math.pow(anchor.x - i, 2) + Math.pow(anchor.y - j, 2));
           let weight = 1 / (distance + 1); // Adding 1 to avoid division by zero
           totalWeight += weight;
           weightedElevation += matx[anchor.x][anchor.y] * weight;
@@ -95,12 +95,16 @@ function randTerrainInter(matx, n, anchors) {
   }
 }
 
+
+
+
 // ### END OF FUNCTION DECLARATIONS
 
 // Define default values for the matrix
 let N = 50;
 let MAX_ELEV = 25;
 let ANCHOR_PERCENT = 0.01;
+let CLOSEST_ANCHOR_COUNT = 4;
 
 // Function to display the matrix
 document.addEventListener("DOMContentLoaded", () => {
@@ -109,7 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let randomCoordinates = getRandomCoordinates(N, anchorCount);
   let randMatx = Array.from({ length: N }, () => Array(N).fill(0));
   randPopulateMatx(randMatx, randomCoordinates, MAX_ELEV);
-  randTerrainInter(randMatx, N, randomCoordinates);
+  randTerrainInter(randMatx, N, randomCoordinates, CLOSEST_ANCHOR_COUNT);
 
   // Display the initial matrix
   displayMatrix(randMatx);
@@ -122,13 +126,16 @@ document.addEventListener("DOMContentLoaded", () => {
     ANCHOR_PERCENT = parseFloat(
       document.getElementById("anchor-percent").value
     );
+    CLOSEST_ANCHOR_COUNT = parseFloat(
+      document.getElementById("closest-anchor-count").value
+    );
 
     // Reinitialize the matrices
     anchorCount = Math.floor(N * N * ANCHOR_PERCENT);
     randomCoordinates = getRandomCoordinates(N, anchorCount);
     randMatx = Array.from({ length: N }, () => Array(N).fill(0));
     randPopulateMatx(randMatx, randomCoordinates, MAX_ELEV);
-    randTerrainInter(randMatx, N, randomCoordinates);
+    randTerrainInter(randMatx, N, randomCoordinates, CLOSEST_ANCHOR_COUNT);
 
     displayMatrix(randMatx);
   });

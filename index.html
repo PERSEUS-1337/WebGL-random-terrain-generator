@@ -93,6 +93,9 @@
         <label for="anchor-percent">Anchor Percent:</label>
         <input type="number" id="anchor-percent" value="0.01" min="0.01" max="1" step="0.01">
         <br>
+        <label for="closest-anchor-count">Closest Anchor Count:</label>
+        <input type="number" id="closest-anchor-count" value="4" min="1" step="1">
+                <br>
         <button id="regenerate-button">Regenerate</button>
     </div>
     <canvas id="main_canvas" width="1280" height="720"></canvas>
@@ -139,8 +142,8 @@
         gl.uniformMatrix4fv(uProjectionMatrixPointer, false, projectionMatrix);
 
         /**START VIEW MATRIX SPECIFICATION**/
-        var lookAtPoint = [-8.0, 0.0, -8.0, 1.0];              //where the camera is looking
-        var eyePoint = [10.0, 8.0, 10.0, 1.0];              //where the camera is placed
+        var lookAtPoint = [-5.0, 0.0, -5.0, 1.0];              //where the camera is looking
+        var eyePoint = [7.0, 5.0, 7.0, 1.0];              //where the camera is placed
         var upVector = [0.0, 1.0, 0.0, 0.0];              //orientation of the camera
 
         viewMatrix = mat4.create();
@@ -200,11 +203,12 @@
         // RNG HEIGHT GENERATION
         MAX_ELEV = parseFloat(document.getElementById("max-elevation").value);
         ANCHOR_PERCENT = parseFloat(document.getElementById("anchor-percent").value);
+        CLOSEST_ANCHOR_COUNT = parseFloat(document.getElementById("closest-anchor-count").value);
         let anchorCount = Math.floor(numCubes * numCubes * ANCHOR_PERCENT);
         let randomCoordinates = getRandomCoordinates(numCubes, anchorCount);
         let randMatx = Array.from({ length: numCubes }, () => Array(numCubes).fill(0));
         randPopulateMatx(randMatx, randomCoordinates, MAX_ELEV);
-        randTerrainInter(randMatx, numCubes, randomCoordinates);
+        randTerrainInter(randMatx, numCubes, randomCoordinates, CLOSEST_ANCHOR_COUNT);
         
         
         
@@ -228,6 +232,7 @@
                     var height = randMatx[row][col]
                     var x = col * cubeSize * 1 - numCubes * cubeSize;
                     var y = height * cubeSize; // Apply height directly
+                    // console.log(y);
                     var z = row * cubeSize * 1 - numCubes * cubeSize;
                     offsets.push(x, y, z);
                 }
@@ -277,14 +282,15 @@
             ANCHOR_PERCENT = parseFloat(
                 document.getElementById("anchor-percent").value
             );
-            console.log(numCubes, MAX_ELEV, ANCHOR_PERCENT);
+            CLOSEST_ANCHOR_COUNT = parseInt(document.getElementById("closest-anchor-count").value);
+            console.log(numCubes, MAX_ELEV, ANCHOR_PERCENT, CLOSEST_ANCHOR_COUNT);
 
             // Reinitialize the matrices
             anchorCount = Math.floor(numCubes * numCubes * ANCHOR_PERCENT);
             randomCoordinates = getRandomCoordinates(numCubes, anchorCount);
             randMatx = Array.from({ length: numCubes }, () => Array(numCubes).fill(0));
             randPopulateMatx(randMatx, randomCoordinates, MAX_ELEV);
-            randTerrainInter(randMatx, numCubes, randomCoordinates);
+            randTerrainInter(randMatx, numCubes, randomCoordinates, CLOSEST_ANCHOR_COUNT);
 
             // displayMatrix(randMatx);
             drawScene();
