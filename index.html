@@ -209,10 +209,17 @@
         let randMatx = Array.from({ length: numCubes }, () => Array(numCubes).fill(0));
         randPopulateMatx(randMatx, randomCoordinates, MAX_ELEV);
         randTerrainInter(randMatx, numCubes, randomCoordinates, CLOSEST_ANCHOR_COUNT);
+        var offsets = [];
+        for (var row = 0; row < numCubes; row++) {
+            for (var col = 0; col < numCubes; col++) {
+                var height = randMatx[row][col]
+                var x = col * cubeSize * 1 - numCubes * cubeSize;
+                var y = height * cubeSize; // Apply height directly
+                var z = row * cubeSize * 1 - numCubes * cubeSize;
+                offsets.push(x, y, z);
+            }
+        }
         
-        
-        
-
         var cubeColors = [];
         // Generate random colors for each cube
         for (var i = 0; i < numCubes*numCubes; i++) {
@@ -226,18 +233,6 @@
         var offsetBuffer = gl.createBuffer();
 
         function drawScene() {
-            var offsets = [];
-            for (var row = 0; row < numCubes; row++) {
-                for (var col = 0; col < numCubes; col++) {
-                    var height = randMatx[row][col]
-                    var x = col * cubeSize * 1 - numCubes * cubeSize;
-                    var y = height * cubeSize; // Apply height directly
-                    // console.log(y);
-                    var z = row * cubeSize * 1 - numCubes * cubeSize;
-                    offsets.push(x, y, z);
-                }
-            }
-                 
             gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 
@@ -283,7 +278,6 @@
                 document.getElementById("anchor-percent").value
             );
             CLOSEST_ANCHOR_COUNT = parseInt(document.getElementById("closest-anchor-count").value);
-            console.log(numCubes, MAX_ELEV, ANCHOR_PERCENT, CLOSEST_ANCHOR_COUNT);
 
             // Reinitialize the matrices
             anchorCount = Math.floor(numCubes * numCubes * ANCHOR_PERCENT);
@@ -291,8 +285,18 @@
             randMatx = Array.from({ length: numCubes }, () => Array(numCubes).fill(0));
             randPopulateMatx(randMatx, randomCoordinates, MAX_ELEV);
             randTerrainInter(randMatx, numCubes, randomCoordinates, CLOSEST_ANCHOR_COUNT);
+            offsets = [];
+            for (var row = 0; row < numCubes; row++) {
+                for (var col = 0; col < numCubes; col++) {
+                    var height = randMatx[row][col]
+                    var x = col * cubeSize * 1 - numCubes * cubeSize;
+                    var y = height * cubeSize; // Apply height directly
+                    // console.log(y);
+                    var z = row * cubeSize * 1 - numCubes * cubeSize;
+                    offsets.push(x, y, z);
+                }
+            }
 
-            // displayMatrix(randMatx);
             drawScene();
         });
     </script>
