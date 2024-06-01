@@ -124,11 +124,6 @@
             -1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0, -1.0, 1.0, -1.0, 1.0
         ];
 
-        var allVertices = [];
-        var numCubes = 16;
-        var cubeSize = 0.2;
-        var heightIncrement = 0.1;
-
         for (var i = 0; i < vertices.length; i += 4) {
             vertices[i] *= 0.1;
             vertices[i + 1] *= 0.1;
@@ -149,11 +144,15 @@
             -1.0, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 1.0
         ];
 
+        const numCubes = 101;
+        const cubeSize = 0.2;
+
         var allNormals = [];
         for (var i = 0; i < numCubes * numCubes; i++) {
             allNormals.push(...normals);
         }
-        // Generate a random increment between 0.1 and 1
+
+        // Generate a random height increment between 0.1 and 1
         var offsets = [];
         for (var row = 0; row < numCubes; row++) {
             for (var col = 0; col < numCubes; col++) {
@@ -166,7 +165,6 @@
         }
 
         var cubeColors = [];
-
         // Generate random colors for each cube
         for (var i = 0; i < numCubes*numCubes; i++) {
             var color = [Math.random(), Math.random(), Math.random(), 1.0];
