@@ -49,6 +49,7 @@
     <script src="./lib/webgl-utils.js"></script>
     <script src="./lib/webgl-debug.js"></script>
     <script src="./lib/gl-matrix-min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
 
     <script src="./src/rng.js"></script>
 
@@ -74,18 +75,20 @@
             top: 0;
             left: 0;
         }
-        .controls {
+        #controls {
             position: absolute;
             top: 20px; /* Adjust the top position as needed */
             left: 20px; /* Adjust the left position as needed */
-            color: #ffffff; /* White text color */
+            color: #000000; /* White text color */
             z-index: 1; /* Ensure controls render on top of the canvas */
+            background-color: white;
+            padding: 10px;
         }
     </style>
 </head>
 
 <body>
-    <div class="controls">
+    <div id="controls"  class="container-w-20-shadow-lg p-3 mb-5 bg-white rounded">
         <label for="matrix-size">Matrix Size (N):</label>
         <input type="number" id="matrix-size" value="100" min="10" step="1">
         <br>
@@ -96,10 +99,13 @@
         <input type="number" id="anchor-percent" value="0.01" min="0.01" max="1" step="0.01">
         <br>
         <button id="regenerate-button">Regenerate</button>
+        
         <br><br>
+        <button id="dayNightCycle">Day Night Cycle</button>
+
         <label>Time:</label>
         <span id="timeDisplay">12:00</span>
-        <input type="range" id="timeSlider" min="0" max="1440" step="1" value="720">
+        <input class='range' type="range" id="timeSlider" min="0" max="1440" step="1" value="720">
     </div>
     <canvas id="main_canvas" width="1280" height="720"></canvas>
 
