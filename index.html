@@ -82,12 +82,16 @@
             z-index: 1; /* Ensure controls render on top of the canvas */
             background-color: white;
             padding: 10px;
+            opacity: 25%;
+        }
+        #controls:hover {
+            opacity: 100%;
         }
     </style>
 </head>
 
 <body>
-    <div id="controls"  class="container-w-20-shadow-lg p-3 mb-5 bg-white rounded">
+    <div id="controls"  class="opacity-50 container-w-20-shadow-lg p-3 mb-5 bg-white rounded">
         <label for="matrix-size">Matrix Size (N):</label>
         <input type="number" id="matrix-size" value="50" min="10" step="1">
         <br>
@@ -100,14 +104,14 @@
         <label for="closest-anchor-count">Closest Anchor Count:</label>
         <input type="number" id="closest-anchor-count" value="4" min="1" step="1">
         <br>
-        <button id="regenerate-button">Regenerate</button>
+        <button id="regenerate-button" class="btn btn-primary">Regenerate</button>
         
         <br><br>
         <label>Time:</label>
         <span id="timeDisplay">12:00</span>
         <input class='range' type="range" id="timeSlider" min="0" max="1440" step="1" value="720">
         <br>
-        <button id="dayNightCycle">Start Day/Night Cycle</button>
+        <button id="dayNightCycle" class="btn btn-primary">Start Day/Night Cycle</button>
     </div>
     <canvas id="main_canvas" width="1400" height="720"></canvas>
     <script src="./src/rng.js"></script>
