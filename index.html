@@ -99,7 +99,7 @@
         }
 
 				#controls input {
-					width: 50px;
+					width: 100px;
 					/* Fixed width for input elements */
 					margin: 5px 0;
 					/* Optional: Adds some vertical spacing between inputs */
@@ -195,6 +195,7 @@
             <option value="bigger"> Bigger </option>
             <option value="recommended-maximum"> Recommended Maximum</option>
             <option value="superflat-snow"> Superflat Snow</option>
+            <option value="high-compression"> High Compression</option>
         </select>
         <br>
         <button id="generate-preset-button" class="btn btn-primary">Generate Preset</button>
@@ -510,9 +511,6 @@
 					}
 				});
 
-
-
-
         function getHeightGaps(mat, gap) {
             var gapRet = [0, 0, 0, 0, 0];
 
@@ -671,6 +669,7 @@
             "bigger": [100, 10, 0, 0.01, 4],
             "recommended-maximum": [200, 10, 0, 0.01, 4],
             "superflat-snow": [100, 12, 12, 0.01, 4],
+            "high-compression": [100, 15, 0, 0.005, 45],
         };
         document.getElementById("presets").addEventListener("change", () =>{
             const preset = document.getElementById("presets").value;
