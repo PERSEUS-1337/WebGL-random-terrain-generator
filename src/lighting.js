@@ -67,7 +67,11 @@ dayNightCycleButton.addEventListener('click', function() {
     if (active){
         dayNightCycle();
         dayNightCycleButton.textContent = "Stop Day/Night Cycle"
+        dayNightCycleButton.classList.remove("btn-primary");
+        dayNightCycleButton.classList.add("btn-danger");
     } else {
         dayNightCycleButton.textContent = "Start Day/Night Cycle"
+        dayNightCycleButton.classList.remove("btn-danger");
+        dayNightCycleButton.classList.add("btn-primary");
     }
 });
