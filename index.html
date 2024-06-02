@@ -425,7 +425,7 @@
             "recommended-maximum": [200, 10, 0, 0.01, 4],
             "superflat-snow": [100, 12, 12, 0.01, 4],
         };
-        document.getElementById("generate-preset-button").addEventListener("click", () => {
+        document.getElementById("presets").addEventListener("change", () =>{
             const preset = document.getElementById("presets").value;
             const preset_values = presets[preset];
             var matrixSize = document.getElementById('matrix-size');
@@ -438,7 +438,9 @@
             minElevation.value = preset_values[2];
             anchorPercent.value = preset_values[3];
             closestAnchorCount.value = preset_values[4];
-
+        });
+        
+        document.getElementById("generate-preset-button").addEventListener("click", () => {
             generate();
         });
 
