@@ -48,13 +48,13 @@ This project was developed as part of the CMSC 161 Interactive Computer Graphics
 - Anchor Percent dictates how many of the cubes will act as points to use for height estimation.
 - Closest Anchor Count dictates how many of the nearest anchors will be used for interpolating a cube’s height.
 - Press regenerate to regenerate the terrain using the settings provided. Higher values may take longer to generate. 
-3. **Control Panel - Day/Night Controls**
+3. **Control Panel - Day/Night Controls** 
 - Slider displays the current time and can be dragged left or right to adjust the sun’s position.
 - Pressing the Start Day/Night Cycle button will animate the movement of the sun. 
-4. **Control Panel - Presets**
+4. **Control Panel - Presets** <br>
    Presets are pre-determined values for the terrain settings above. Choosing a preset changes the values in the terrain settings field. Press generate preset to enact the changes, or modify the values first and press regenerate instead.
    Current Presets: Default, Bigger, Recommended Maximum, Superflat Snow 
-5. **Terrain Palette**
+5. **Terrain Palette** <br>
    Changes the color palette used by the generator. Takes effect immediately, no need to regenerate/generate.
    Current Palettes: Default, Sand, Jungle, Frozen, Heatmap
    
