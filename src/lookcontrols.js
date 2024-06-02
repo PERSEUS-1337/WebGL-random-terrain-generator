@@ -1,3 +1,6 @@
+const autoRotateButton = document.getElementById("autoRotate");
+const resetCamButton = document.getElementById("resetCam");
+
 const dragSens = 0.01;
 const panSpeed = 0.1;
 const zoomMult = 0.95;
@@ -5,7 +8,8 @@ const zoomMult = 0.95;
 let isDragging = false;
 let previousMousePosition = { x: 0, y: 0 };
 let keysPressed = {};
-let timer;
+let panInterval, rotateInterval;
+let rotating = false;
 
 let direction = vec3.subtract([], eyePoint, lookAtPoint);
 vec3.normalize(direction, direction);
@@ -21,9 +25,7 @@ canvas.addEventListener('wheel', (event) => {
         zoom /= zoomMult;
     }
 
-    mat4.perspective(projectionMatrix, glMatrix.toRadian(30)*zoom, canvas.width / canvas.height, 1, 1000);
-    gl.uniformMatrix4fv(uProjectionMatrixPointer, false, projectionMatrix);
-    drawScene();
+    updateCamera();
 });
 
 // Event listeners for clicking on canvas
@@ -67,14 +69,14 @@ canvas.addEventListener('mousemove', (event) => {
 // Keyboard event listeners for panning
 window.addEventListener('keydown', (event) => {
     keysPressed[event.key] = true;
-    if (timer) return;
-    timer = setInterval(panCamera, 16);
+    if (panInterval) return;
+    panInterval = setInterval(panCamera, 16);
 });
 
 window.addEventListener('keyup', (event) => {
     keysPressed[event.key] = false;
-    clearInterval(timer);
-    timer = null;
+    clearInterval(panInterval);
+    panInterval = null;
 });
 
 // Pan Camera (WASD - forward/left/backward/right, QE - descend/ascend)
@@ -121,9 +123,64 @@ function panCamera() {
     updateCamera();
 }
 
-// Update the view matrix
+// Update the view and projection matrix
 function updateCamera() {    
     viewMatrix = mat4.lookAt(mat4.create(), eyePoint, lookAtPoint, upVector);
     gl.uniformMatrix4fv(uViewMatrixPointer, false, viewMatrix);
+
+    mat4.perspective(projectionMatrix, glMatrix.toRadian(30)*zoom, canvas.width / canvas.height, 1, 1000);
+    gl.uniformMatrix4fv(uProjectionMatrixPointer, false, projectionMatrix);
+
     drawScene();
 }
+
+// Reset camera to default position
+function resetCamera(){
+    lookAtPoint = [-(numCubes*cubeSize)/2, 0.0, -(numCubes*cubeSize)/2, 1.0];
+    eyePoint = [-(numCubes*cubeSize)*2, (numCubes*cubeSize), -(numCubes*cubeSize)*2, 1.0];
+    direction = vec3.subtract([], eyePoint, lookAtPoint);
+    vec3.normalize(direction, direction);
+    yaw = Math.atan2(direction[0], direction[2]);
+    pitch = Math.asin(direction[1]);
+    zoom = 1.0;
+
+    updateCamera();
+}
+
+// Rotate along y axis
+function autoRotate(){
+    // Increase yaw
+    yaw += 0.01
+
+    // Update camera position
+    let r = Math.sqrt(Math.pow(eyePoint[0]-lookAtPoint[0], 2) + Math.pow(eyePoint[1]-lookAtPoint[1], 2) + Math.pow(eyePoint[2]-lookAtPoint[2], 2))
+    eyePoint = [
+        r * Math.cos(pitch) * Math.sin(yaw) + lookAtPoint[0],
+        r * Math.sin(pitch) + lookAtPoint[1],
+        r * Math.cos(pitch) * Math.cos(yaw) + lookAtPoint[2]
+    ]
+
+    updateCamera();
+}
+
+autoRotateButton.addEventListener('click', function() {
+    rotating = !rotating;
+
+    if (rotating){
+        autoRotateButton.textContent = "Stop Auto Rotate"
+        autoRotateButton.classList.remove("btn-primary");
+        autoRotateButton.classList.add("btn-danger");
+        resetCamera();
+        if (rotateInterval) return;
+        rotateInterval = setInterval(autoRotate, 16);
+    } else {
+        autoRotateButton.textContent = "Start Auto Rotate"
+        autoRotateButton.classList.remove("btn-danger");
+        autoRotateButton.classList.add("btn-primary");
+        clearInterval(rotateInterval);
+        rotateInterval = null;
+    }
+    
+})
+
+resetCamButton.addEventListener('click', resetCamera);
