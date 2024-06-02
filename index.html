@@ -147,11 +147,9 @@
         <hr>
         <h5>Camera Controls</h5>
         <button id="autoRotate" class="btn btn-primary">Start Auto Rotate</button>
-        <br><br>
         <button id="resetCam" class="btn btn-primary">Reset Camera</button>
-        <button id="dayNightCycle">Start Day/Night Cycle</button>
-
-        <br><br>
+        <hr>
+        <h5>Terrain Palette</h5>
         <div>
             <label class="medium" for="colors">COLORS: </label>
             <select class="dropdown" name="colors" id="colors">
@@ -554,12 +552,12 @@
             generate();
         });
 
+        document.getElementById('colors').addEventListener('change', () => {
+            drawScene();
+          })
         // Finally, draw the scene
         drawScene();
 
-        document.getElementById('colors').addEventListener('change', () => {
-          drawScene();
-        })
     </script>
     <script src="./src/lookcontrols.js"></script>
     <script src="./src/lighting.js"></script>
