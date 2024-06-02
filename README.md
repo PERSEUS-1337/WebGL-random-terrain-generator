@@ -18,7 +18,6 @@ This project was developed as part of the CMSC 161 Interactive Computer Graphics
 ## Features
 - **Random Terrain Generation**: Generates unique terrains each time, ensuring diverse landscapes.
 - **WebGL Visualization**: Uses WebGL to render and display the generated terrains in a web browser.
-- **Export Functionality**: Allows users to export the generated terrains for use in external applications.
 
 ## Installation
 ### Prerequisites
@@ -40,8 +39,8 @@ This project was developed as part of the CMSC 161 Interactive Computer Graphics
 - Press and hold left click (Mouse 1) in the viewport to rotate the model manually.
 - Scroll in and out to zoom in and out.
 - In the Control Panel, under Camera Controls, there are two buttons for camera movement:
-   -- ```Auto Rotate``` rotates the model in a loop.
-   -- ```Reset Camera``` returns the position of the camera to its initial placement.
+   ```Auto Rotate``` rotates the model in a loop.
+   ```Reset Camera``` returns the position of the camera to its initial placement.
 2. **Control Panel - Terrain Settings**
 - Matrix Size dictates the nxn size of the map to be generated. The default is 50.
 - Max Elevation dictates the maximum elevation, 10 being the default. Higher elevations may result in surreal terrains.
