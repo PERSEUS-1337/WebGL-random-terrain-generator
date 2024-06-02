@@ -1,1 +1,0 @@
-get a local server running and access the index.html using that.
