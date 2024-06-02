@@ -94,7 +94,8 @@
             /* Ensure controls render on top of the canvas */
             background-color: white;
             padding: 10px;
-            opacity: 25%;
+            opacity: 100%;
+            transition: opacity 2s ease;
         }
 
         #controls:hover {
@@ -147,6 +148,21 @@
     </div>
     <canvas id="main_canvas" width="1400" height="720"></canvas>
     <script src="./src/rng.js"></script>
+    <script>
+        // Fade out the controls after two seconds. This only happens once.
+        setTimeout(function () {
+            document.getElementById('controls').style.opacity = '0';
+        }, 2000);
+
+        // Add event listeners to control the hover effect
+        document.getElementById('controls').addEventListener('mouseover', function () {
+            this.style.opacity = '1';
+        });
+
+        document.getElementById('controls').addEventListener('mouseout', function () {
+            this.style.opacity = '0';
+        });
+    </script>
     <script>
         var canvas = document.getElementById("main_canvas");
         var gl = canvas.getContext("webgl2") || canvas.getContext("webgl");
@@ -427,6 +443,7 @@
 
             generate();
         });
+
         // Finally, draw the scene
         drawScene();
     </script>
