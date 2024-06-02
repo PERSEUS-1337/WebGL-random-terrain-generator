@@ -98,6 +98,13 @@
             transition: opacity 1s ease;
         }
 
+				#controls input {
+					width: 50px;
+					/* Fixed width for input elements */
+					margin: 5px 0;
+					/* Optional: Adds some vertical spacing between inputs */
+				}
+
         #controls:hover {
             opacity: 100%;
         }
@@ -116,7 +123,26 @@
         #text-controls {
             opacity: 1;  /* Ensure text controls are fully opaque */
         }
-
+				#info {
+					position: absolute;
+					bottom: 0px;
+					right: 20px;
+					z-index: 1;
+					color: black;
+					background-color: rgba(255, 255, 255, 0.25);  /* Set a semi-transparent background */
+					padding: 10px;
+					font-size: 0.9em;
+					border: 1px solid #ccc;  
+					text-align: right;
+				}
+				#info p {
+					margin: 2px 0; /* Adjust the values to your preference */
+					padding: 0; /* Optional: If there's any padding you want to reduce */
+					line-height: 1.2; /* Adjust the value to your preference */
+				}
+				.bold-number {
+					font-weight: bold;
+				}
     </style>
 </head>
 
@@ -178,6 +204,8 @@
                 <option value="heatmap">Heatmap</option>
             </select>
         </div>
+				<hr>
+				<h5>Import / Export Map</h5>
     </div>
     <div id="extra-controls" class="container-w-20 p-2 mb-3 rounded">
         <div id="text-controls">
@@ -190,6 +218,15 @@
         </div>
         <!-- Add your extra controls here -->
     </div>
+		<div id="info" class="container-w-20 p-2 mb-3 rounded">
+			<p id="matrix-size-text">Size: <span class="bold-number"></span></p>
+			<p id="max-elevation-text">Max Elevation: <span class="bold-number"></span></p>
+			<p id="min-elevation-text">Min Elevation: <span class="bold-number"></span></p>
+			<p id="anchor-percent-text">Anchor Percent: <span class="bold-number"></span></p>
+			<p id="closest-anchor-count-text">Closest Anchor Count: <span class="bold-number"></span></p>
+			<p id="anchor-count-text">Anchor Count: <span class="bold-number"></span></p>
+			<p id="avg-height-text">Average Height: <span class="bold-number"></span></p>
+		</div>
     <canvas id="main_canvas" width="1400" height="720"></canvas>
     <script src="./src/rng.js"></script>
     <script>
@@ -333,7 +370,8 @@
         var offsetBuffer = gl.createBuffer();
 
         function drawScene() {
-          var offsets = [];
+					displayHud();
+					var offsets = [];
           var colors=[];
           var gap = MAX_ELEV*cubeSize;
           // gap = ((numCubes*numCubes)/5)*0.1;
@@ -346,63 +384,78 @@
           let chosen = (selectElement.value);
 
             for (var row = 0; row < numCubes; row++) {
-                for (var col = 0; col < numCubes; col++) {
-                    var height = randMatx[row][col]
-                    var x = col * cubeSize * 1 - numCubes * cubeSize;
-                    var y = height * cubeSize; // Apply height directly
-                    var z = row * cubeSize * 1 - numCubes * cubeSize;
-                    offsets.push(x, y, z);
+							for (var col = 0; col < numCubes; col++) {
+								var height = randMatx[row][col]
+								var x = col * cubeSize * 1 - numCubes * cubeSize;
+								var y = height * cubeSize; // Apply height directly
+								var z = row * cubeSize * 1 - numCubes * cubeSize;
+								offsets.push(x, y, z);
 
-                  var colorResult = getColor(y, gap, chosen);
-                  var colorList = colorResult[1].map(function (value) { 
-                      return (value * ( ((height-min) / (max-min) ) * 2));
-                  });
-                  colorList.forEach((value) => colors.push(value));
-              }
+								var colorResult = getColor(y, gap, chosen);
+								var colorList = colorResult[1].map(function (value) { 
+								return (value * ( ((height-min) / (max-min) ) * 2));
+							});
+							colorList.forEach((value) => colors.push(value));
+						}
           }
 
-            gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+					gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+					gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 
-            gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(allNormals), gl.STATIC_DRAW);
+					gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+					gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(allNormals), gl.STATIC_DRAW);
 
-            gl.bindBuffer(gl.ARRAY_BUFFER, offsetBuffer);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(offsets), gl.STATIC_DRAW);
+					gl.bindBuffer(gl.ARRAY_BUFFER, offsetBuffer);
+					gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(offsets), gl.STATIC_DRAW);
 
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+					gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+					gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
 
-            gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-            gl.vertexAttribPointer(aPositionPointer, 4, gl.FLOAT, false, 0, 0);
-            gl.enableVertexAttribArray(aPositionPointer);
+					gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+					gl.vertexAttribPointer(aPositionPointer, 4, gl.FLOAT, false, 0, 0);
+					gl.enableVertexAttribArray(aPositionPointer);
 
-            gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
-            gl.vertexAttribPointer(aNormalPointer, 4, gl.FLOAT, false, 0, 0);
-            gl.enableVertexAttribArray(aNormalPointer);
+					gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+					gl.vertexAttribPointer(aNormalPointer, 4, gl.FLOAT, false, 0, 0);
+					gl.enableVertexAttribArray(aNormalPointer);
 
-            gl.bindBuffer(gl.ARRAY_BUFFER, offsetBuffer);
-            gl.vertexAttribPointer(aOffsetPointer, 3, gl.FLOAT, false, 0, 0);
-            gl.enableVertexAttribArray(aOffsetPointer);
-            gl.vertexAttribDivisor(aOffsetPointer, 1);  // This tells WebGL to use this attribute as instanced data
+					gl.bindBuffer(gl.ARRAY_BUFFER, offsetBuffer);
+					gl.vertexAttribPointer(aOffsetPointer, 3, gl.FLOAT, false, 0, 0);
+					gl.enableVertexAttribArray(aOffsetPointer);
+					gl.vertexAttribDivisor(aOffsetPointer, 1);  // This tells WebGL to use this attribute as instanced data
 
-            // ADD COLORS
-            gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
-            gl.enableVertexAttribArray(colorPointer);
-            gl.vertexAttribPointer(colorPointer, 4, gl.FLOAT, false, 0, 0);
-            gl.vertexAttribDivisor(colorPointer, 1);
+					// ADD COLORS
+					gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+					gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+					gl.enableVertexAttribArray(colorPointer);
+					gl.vertexAttribPointer(colorPointer, 4, gl.FLOAT, false, 0, 0);
+					gl.vertexAttribDivisor(colorPointer, 1);
 
-            gl.clearColor(skyColor[0], skyColor[1], skyColor[2], skyColor[3]);
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+					gl.clearColor(skyColor[0], skyColor[1], skyColor[2], skyColor[3]);
+					gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-            if (gl.drawArraysInstanced) {
-                gl.drawElementsInstanced(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0, numCubes * numCubes);
-            } else {
-                var ext = gl.getExtension("ANGLE_instanced_arrays");
-                ext.drawElementsInstancedANGLE(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0, numCubes * numCubes);
-            }
+					if (gl.drawArraysInstanced) {
+							gl.drawElementsInstanced(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0, numCubes * numCubes);
+					} else {
+						var ext = gl.getExtension("ANGLE_instanced_arrays");
+						ext.drawElementsInstancedANGLE(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0, numCubes * numCubes);
+					}
+					
         }
+
+				function displayHud() {
+					// Update the text in the HTML with bold numbers
+					let avgHeight = calculateAverageHeight(randMatx);
+					document.querySelector("#matrix-size-text .bold-number").textContent = numCubes;
+					document.querySelector("#max-elevation-text .bold-number").textContent = MAX_ELEV;
+					document.querySelector("#min-elevation-text .bold-number").textContent = MIN_ELEV;
+					document.querySelector("#anchor-percent-text .bold-number").textContent = ANCHOR_PERCENT;
+					document.querySelector("#closest-anchor-count-text .bold-number").textContent = CLOSEST_ANCHOR_COUNT;
+					document.querySelector("#anchor-count-text .bold-number").textContent = anchorCount;
+					document.querySelector("#avg-height-text .bold-number").textContent = avgHeight;
+				}
+
+
 
         function getHeightGaps(mat, gap) {
             var gapRet = [0, 0, 0, 0, 0];
@@ -520,7 +573,8 @@
             }
           }
         }
-        function generate(){
+
+        function generate() {
             // Fetch new values for the matrix
             numCubes = parseInt(document.getElementById("matrix-size").value);
             MAX_ELEV = parseInt(document.getElementById("max-elevation").value);
