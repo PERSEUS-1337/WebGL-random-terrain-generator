@@ -95,7 +95,7 @@
             background-color: white;
             padding: 10px;
             opacity: 100%;
-            transition: opacity 2s ease;
+            transition: opacity 1s ease;
         }
 
         #controls:hover {
@@ -106,13 +106,17 @@
             top: 20px;
             right: 20px;
             color: #000000;
-            z-index: 1;
-            background-color: white;
+            z-index: 1;  /* Ensure the controls are above other elements */
+            background-color: rgba(255, 255, 255, 0.25);  /* Set a semi-transparent background */
             padding: 10px;
-            opacity: 100%;
-            transition: opacity 2s ease;
             font-size: 0.9em;
+            border: 1px solid #ccc;  /* Optional: add a border to help define the container */
         }
+        
+        #text-controls {
+            opacity: 1;  /* Ensure text controls are fully opaque */
+        }
+
     </style>
 </head>
 
@@ -175,16 +179,15 @@
             </select>
         </div>
     </div>
-    <div id="extra-controls" class="opacity-50 container-w-20-shadow-lg p-2 mb-3 bg-white rounded">
-        <h6>Camera Controls</h6>
-        <hr>
-        <p><b>W/A/S/D</b> to pan camera.</p>
-        <p><b>Q/E</b> to pan down or up.</p>
-        <p><b>Hold Left Click</b> to rotate camera.</p>
-        <p><b>Scroll up/down</b> to zoom in/out.</p>
-
-
-
+    <div id="extra-controls" class="container-w-20 p-2 mb-3 rounded">
+        <div id="text-controls">
+            <h6>Camera Controls</h6>
+            <hr>
+            <p><b>W/A/S/D</b> to pan camera.</p>
+            <p><b>Q/E</b> to pan down or up.</p>
+            <p><b>Hold Left Click</b> to rotate camera.</p>
+            <p><b>Scroll up/down</b> to zoom in/out.</p>
+        </div>
         <!-- Add your extra controls here -->
     </div>
     <canvas id="main_canvas" width="1400" height="720"></canvas>
@@ -193,7 +196,7 @@
         // Fade out the controls after two seconds. This only happens once.
         setTimeout(function () {
             document.getElementById('controls').style.opacity = '0';
-        }, 3000);
+        }, 1000);
 
         // Add event listeners to control the hover effect
         document.getElementById('controls').addEventListener('mouseover', function () {
