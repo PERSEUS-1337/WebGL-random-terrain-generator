@@ -376,12 +376,7 @@
 						}
 					}
 					console.log(randMatx)
-
-                    lookAtPoint = [-(numCubes*cubeSize)/2, 0.0, -(numCubes*cubeSize)/2, 1.0];  
-                    eyePoint = [-(numCubes*cubeSize)*2, (numCubes*cubeSize), -(numCubes*cubeSize)*2, 1.0];
-                    viewMatrix = mat4.lookAt(mat4.create(), eyePoint, lookAtPoint, upVector);
-                    gl.uniformMatrix4fv(uViewMatrixPointer, false, viewMatrix);
-
+                    resetCamera();
 					drawScene();
 				});
 						
