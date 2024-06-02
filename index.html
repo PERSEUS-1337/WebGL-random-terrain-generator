@@ -48,8 +48,6 @@
     <script src="./lib/webgl-debug.js"></script>
     <script src="./lib/gl-matrix-min.js"></script>
 
-    <script src="./src/rng.js"></script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Random Terrain Generator</title>
@@ -85,21 +83,21 @@
 <body>
     <div class="controls">
         <label for="matrix-size">Matrix Size (N):</label>
-        <input type="number" id="matrix-size" value="100" min="10" step="1">
+        <input type="number" id="matrix-size" value="50" min="10" step="1">
         <br>
         <label for="max-elevation">Max Elevation:</label>
         <input type="number" id="max-elevation" value="10" min="1" step="1">
         <br>
         <label for="anchor-percent">Anchor Percent:</label>
-        <input type="number" id="anchor-percent" value="0.01" min="0.01" max="1" step="0.01">
+        <input type="number" id="anchor-percent" value="0.01" min="0.001" max="1" step="0.001">
         <br>
         <label for="closest-anchor-count">Closest Anchor Count:</label>
         <input type="number" id="closest-anchor-count" value="4" min="1" step="1">
-                <br>
-        <button id="regenerate-button">Regenerate</button>
+        <br>
+        <button id="regen-button">Regenerate Only</button>
     </div>
-    <canvas id="main_canvas" width="1280" height="720"></canvas>
-
+    <canvas id="main_canvas" width="1400" height="720"></canvas>
+    <script src="./src/rng.js"></script>
     <script>
         var canvas = document.getElementById("main_canvas");
         var gl = canvas.getContext("webgl2") || canvas.getContext("webgl");
@@ -143,7 +141,7 @@
 
         /**START VIEW MATRIX SPECIFICATION**/
         var lookAtPoint = [-5.0, 0.0, -5.0, 1.0];              //where the camera is looking
-        var eyePoint = [7.0, 5.0, 7.0, 1.0];              //where the camera is placed
+        var eyePoint = [6.0, 5.0, -15.0, 1.0];              //where the camera is placed
         var upVector = [0.0, 1.0, 0.0, 0.0];              //orientation of the camera
 
         viewMatrix = mat4.create();
@@ -205,10 +203,11 @@
         ANCHOR_PERCENT = parseFloat(document.getElementById("anchor-percent").value);
         CLOSEST_ANCHOR_COUNT = parseFloat(document.getElementById("closest-anchor-count").value);
         let anchorCount = Math.floor(numCubes * numCubes * ANCHOR_PERCENT);
-        let randomCoordinates = getRandomCoordinates(numCubes, anchorCount);
+        let randomCoordinates = getRandomCoordinates(numCubes, anchorCount, MAX_ELEV);
         let randMatx = Array.from({ length: numCubes }, () => Array(numCubes).fill(0));
-        randPopulateMatx(randMatx, randomCoordinates, MAX_ELEV);
-        randTerrainInter(randMatx, numCubes, randomCoordinates, CLOSEST_ANCHOR_COUNT);
+        populateMatx(randMatx, randomCoordinates);
+        terrainInter(randMatx, numCubes, randomCoordinates, CLOSEST_ANCHOR_COUNT);
+
         var offsets = [];
         for (var row = 0; row < numCubes; row++) {
             for (var col = 0; col < numCubes; col++) {
@@ -268,37 +267,39 @@
             }
         }
 
-        drawScene();
-
-        document.getElementById("regenerate-button").addEventListener("click", () => {
+        document.getElementById("regen-button").addEventListener("click", () => {
             // Fetch new values for the matrix
             numCubes = parseInt(document.getElementById("matrix-size").value);
             MAX_ELEV = parseInt(document.getElementById("max-elevation").value);
-            ANCHOR_PERCENT = parseFloat(
-                document.getElementById("anchor-percent").value
+            ANCHOR_PERCENT = parseFloat(document.getElementById("anchor-percent").value);
+            CLOSEST_ANCHOR_COUNT = parseInt(
+                document.getElementById("closest-anchor-count").value
             );
-            CLOSEST_ANCHOR_COUNT = parseInt(document.getElementById("closest-anchor-count").value);
 
             // Reinitialize the matrices
             anchorCount = Math.floor(numCubes * numCubes * ANCHOR_PERCENT);
-            randomCoordinates = getRandomCoordinates(numCubes, anchorCount);
+            randomCoordinates = getRandomCoordinates(numCubes, anchorCount, MAX_ELEV);
             randMatx = Array.from({ length: numCubes }, () => Array(numCubes).fill(0));
-            randPopulateMatx(randMatx, randomCoordinates, MAX_ELEV);
-            randTerrainInter(randMatx, numCubes, randomCoordinates, CLOSEST_ANCHOR_COUNT);
+            populateMatx(randMatx, randomCoordinates);
+            terrainInter(randMatx, numCubes, randomCoordinates, CLOSEST_ANCHOR_COUNT);
+
             offsets = [];
             for (var row = 0; row < numCubes; row++) {
                 for (var col = 0; col < numCubes; col++) {
-                    var height = randMatx[row][col]
-                    var x = col * cubeSize * 1 - numCubes * cubeSize;
-                    var y = height * cubeSize; // Apply height directly
-                    // console.log(y);
-                    var z = row * cubeSize * 1 - numCubes * cubeSize;
-                    offsets.push(x, y, z);
+                var height = randMatx[row][col];
+                var x = col * cubeSize * 1 - numCubes * cubeSize;
+                var y = height * cubeSize; // Apply height directly
+                // console.log(y);
+                var z = row * cubeSize * 1 - numCubes * cubeSize;
+                offsets.push(x, y, z);
                 }
             }
-
+            console.log(randMatx)
             drawScene();
-        });
+            });
+
+        drawScene();
+
     </script>
     <script src="./src/lookcontrols.js"></script>
 

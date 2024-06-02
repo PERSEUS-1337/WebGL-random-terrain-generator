@@ -1,5 +1,5 @@
 // Function to display the matrix on the web page
-function displayMatrix(matrix) {
+function displayMatrix(matrix, max_elev) {
   const container = document.getElementById("matrix-container");
   container.innerHTML = ""; // Clear previous content
   const table = document.createElement("table");
@@ -11,9 +11,9 @@ function displayMatrix(matrix) {
       const cell = document.createElement("td");
       const cellData = matrix[i][j];
       cell.style.backgroundColor = `rgb(${Math.floor(
-        (cellData / MAX_ELEV) * 255
-      )}, ${Math.floor((cellData / MAX_ELEV) * 255)}, ${Math.floor(
-        (cellData / MAX_ELEV) * 255
+        (cellData / max_elev) * 255
+      )}, ${Math.floor((cellData / max_elev) * 255)}, ${Math.floor(
+        (cellData / max_elev) * 255
       )})`;
       cell.textContent = cellData.toFixed(2); // Display the data inside the cell
       row.appendChild(cell);
@@ -33,31 +33,24 @@ function getRandomInt(max) {
   return Math.floor(Math.random() * max);
 }
 
-function getMin(index) {
-  return Math.floor(index / 10) * 10;
-}
-
-function getMax(index) {
-  return Math.ceil(index / 10) * 10;
-}
-
-function getRandomCoordinates(n, count) {
+function getRandomCoordinates(n, count, max) {
   let coordinates = [];
   while (coordinates.length < count) {
     let x = getRandomInt(n);
     let y = getRandomInt(n);
+    let elevation = getRandomFloat(max);
     let key = `${x},${y}`;
     if (!coordinates.some((coord) => coord.key === key)) {
-      coordinates.push({ x, y, key });
+      coordinates.push({ x, y, elevation, key });
     }
   }
   return coordinates;
 }
 
-// Function to populate matrix with random elevations at random coordinates
-function randPopulateMatx(matx, coordinates, max) {
+// Function to populate matrix with elevations at the specified coordinates
+function populateMatx(matx, coordinates) {
   coordinates.forEach((coord) => {
-    matx[coord.x][coord.y] = getRandomFloat(max);
+    matx[coord.x][coord.y] = coord.elevation;
   });
 }
 
@@ -66,14 +59,14 @@ function findClosestAnchors(i, j, anchors, count) {
   let sortedAnchors = anchors
     .map((anchor) => ({
       ...anchor,
-      distance: Math.abs(anchor.x - i) + Math.abs(anchor.y - j),
+      distance: Math.sqrt(Math.pow(anchor.x - i, 2) + Math.pow(anchor.y - j, 2)),
     }))
     .sort((a, b) => a.distance - b.distance);
 
   return sortedAnchors.slice(0, count);
 }
 
-function randTerrainInter(matx, n, anchors, count) {
+function terrainInter(matx, n, anchors, count) {
   for (let i = 0; i < n; i++) {
     for (let j = 0; j < n; j++) {
       if (matx[i][j] === 0) {
@@ -81,22 +74,28 @@ function randTerrainInter(matx, n, anchors, count) {
         let closestAnchors = findClosestAnchors(i, j, anchors, count);
         let totalWeight = 0;
         let weightedElevation = 0;
+        let p = 2; // Power parameter for the weighting function, can be adjusted
 
         closestAnchors.forEach((anchor) => {
           let distance = Math.sqrt(Math.pow(anchor.x - i, 2) + Math.pow(anchor.y - j, 2));
-          let weight = 1 / (distance + 1); // Adding 1 to avoid division by zero
-          totalWeight += weight;
-          weightedElevation += matx[anchor.x][anchor.y] * weight;
+          if (distance === 0) {
+            weightedElevation = matx[anchor.x][anchor.y];
+            totalWeight = 1;
+            return false; // Exit the loop
+          } else {
+            let weight = 1 / Math.pow(distance, p);
+            totalWeight += weight;
+            weightedElevation += matx[anchor.x][anchor.y] * weight;
+          }
         });
 
-        matx[i][j] = weightedElevation / totalWeight;
+        if (totalWeight > 0) {
+          matx[i][j] = weightedElevation / totalWeight;
+        }
       }
     }
   }
 }
-
-
-
 
 // ### END OF FUNCTION DECLARATIONS
 
@@ -106,37 +105,42 @@ let MAX_ELEV = 25;
 let ANCHOR_PERCENT = 0.01;
 let CLOSEST_ANCHOR_COUNT = 4;
 
-// Function to display the matrix
+// Function to display the matrix in the rng_test.html
 document.addEventListener("DOMContentLoaded", () => {
+  // Extract Values from HTML
+  N = parseInt(document.getElementById("matrix-size").value);
+  MAX_ELEV = parseInt(document.getElementById("max-elevation").value);
+  ANCHOR_PERCENT = parseFloat(document.getElementById("anchor-percent").value);
+  CLOSEST_ANCHOR_COUNT = parseFloat(
+    document.getElementById("closest-anchor-count").value
+  );
+
   // Initialize the matrices
   let anchorCount = Math.floor(N * N * ANCHOR_PERCENT);
-  let randomCoordinates = getRandomCoordinates(N, anchorCount);
+  let randomCoordinates = getRandomCoordinates(N, anchorCount, MAX_ELEV);
   let randMatx = Array.from({ length: N }, () => Array(N).fill(0));
-  randPopulateMatx(randMatx, randomCoordinates, MAX_ELEV);
-  randTerrainInter(randMatx, N, randomCoordinates, CLOSEST_ANCHOR_COUNT);
+  populateMatx(randMatx, randomCoordinates);
+  terrainInter(randMatx, N, randomCoordinates, CLOSEST_ANCHOR_COUNT);
 
-  // Display the initial matrix
-  displayMatrix(randMatx);
+  displayMatrix(randMatx, MAX_ELEV);
 
   // Event listener for the regenerate button
   document.getElementById("regenerate-button").addEventListener("click", () => {
     // Fetch new values for the matrix
     N = parseInt(document.getElementById("matrix-size").value);
     MAX_ELEV = parseInt(document.getElementById("max-elevation").value);
-    ANCHOR_PERCENT = parseFloat(
-      document.getElementById("anchor-percent").value
-    );
-    CLOSEST_ANCHOR_COUNT = parseFloat(
-      document.getElementById("closest-anchor-count").value
-    );
-
+    ANCHOR_PERCENT = parseFloat(document.getElementById("anchor-percent").value);
+    CLOSEST_ANCHOR_COUNT = parseFloat(document.getElementById("closest-anchor-count").value);
     // Reinitialize the matrices
     anchorCount = Math.floor(N * N * ANCHOR_PERCENT);
-    randomCoordinates = getRandomCoordinates(N, anchorCount);
+    randomCoordinates = getRandomCoordinates(N, anchorCount, MAX_ELEV);
     randMatx = Array.from({ length: N }, () => Array(N).fill(0));
-    randPopulateMatx(randMatx, randomCoordinates, MAX_ELEV);
-    randTerrainInter(randMatx, N, randomCoordinates, CLOSEST_ANCHOR_COUNT);
+    populateMatx(randMatx, randomCoordinates);
+    terrainInter(randMatx, N, randomCoordinates, CLOSEST_ANCHOR_COUNT);
 
-    displayMatrix(randMatx);
+    displayMatrix(randMatx, MAX_ELEV);
   });
 });
+
+// Function to enable matrix regeneration in the index.html
+
