@@ -149,6 +149,19 @@
         <button id="autoRotate" class="btn btn-primary">Start Auto Rotate</button>
         <br><br>
         <button id="resetCam" class="btn btn-primary">Reset Camera</button>
+        <button id="dayNightCycle">Start Day/Night Cycle</button>
+
+        <br><br>
+        <div>
+            <label class="medium" for="colors">COLORS: </label>
+            <select class="dropdown" name="colors" id="colors">
+                <option value="default">Default</option>
+                <option value="sand">Sand</option>
+                <option value="jungle">Jungle</option>
+                <option value="frozen">Frozen</option>
+                <option value="heatmap">Heatmap</option>
+            </select>
+        </div>
     </div>
     <canvas id="main_canvas" width="1400" height="720"></canvas>
     <script src="./src/rng.js"></script>
@@ -293,14 +306,17 @@
         var offsetBuffer = gl.createBuffer();
 
         function drawScene() {
-            var offsets = [];
-            var colors = [];
-            var gap = MAX_ELEV * cubeSize;
-            // gap = ((numCubes*numCubes)/5)*0.1;
-            var gaps = getHeightGaps(randMatx, gap);
-            var gapCount = [0, 0, 0, 0, 0];
-            var flag = [0, 0, 0, 0, 0];
-            var sorted = [];
+          var offsets = [];
+          var colors=[];
+          var gap = MAX_ELEV*cubeSize;
+          // gap = ((numCubes*numCubes)/5)*0.1;
+          // var gaps = getHeightGaps(randMatx, gap);
+          var results = getMaxMin(randMatx);
+          var min = results[0], max=results[1];
+
+          // palette selected
+          let selectElement = document.querySelector('#colors');
+          let chosen = (selectElement.value);
 
             for (var row = 0; row < numCubes; row++) {
                 for (var col = 0; col < numCubes; col++) {
@@ -310,13 +326,13 @@
                     var z = row * cubeSize * 1 - numCubes * cubeSize;
                     offsets.push(x, y, z);
 
-                    var colorResult = getColor(y, gap);
-                    var colorList = colorResult[1].map(function (value) {
-                        return value * (y);
-                    });
-                    colorList.forEach((value) => colors.push(value));
-                }
-            }
+                  var colorResult = getColor(y, gap, chosen);
+                  var colorList = colorResult[1].map(function (value) { 
+                      return (value * ( ((height-min) / (max-min) ) * 2));
+                  });
+                  colorList.forEach((value) => colors.push(value));
+              }
+          }
 
             gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
@@ -372,23 +388,110 @@
             return gapRet;
         }
 
-        function getColor(y, gap) {
+        function getMaxMin(og_mat) {
+          var max = 0, min = 0;
+          for (var i=0; i<og_mat.length; i++) {
+            var mat = og_mat[i].slice();
+            mat.sort(function(a,b) { return a - b; })
+            if (min > mat[0])
+              min = mat[0];
+            if (max < mat[mat.length-1])
+              max = mat[mat.length-1];
+          }
+
+          return [min, max];
+        }
+
+        function getColor(y, gap, chosen) {
+          if (chosen=='heatmap') {
+            // default
             switch (true) {
-                case y <= gap * (1 / 5):
-                    return [0, [0.35686275, 0.7372549, 1.0, 1.0]]; // dark then light blue
+              case y <= gap*(1/5):
+              return [1, [0.2627451, 0.74509804, 0.90196078, 1.0]];
+              
+              case y <= gap*(2/5):
+              return [2, [0.70980392, 0.7372549, 0.09019608, 1.0]];
+              
+              case y <= gap*(3/5):
+              return [3, [1, 0.71372549, 0.0, 1.0]];
 
-                case y <= gap * (2 / 5):
-                    return [2, [0.69411765, 0.57254902, 0.39215686, 1.0]]; // sand
+              case y <= gap*(4/5):
+              return [4, [0.93333333, 0.33333333, 0.23137255, 1.0]];
 
-                case y <= gap * (3 / 5):
-                    return [1, [0.25098039, 0.64705882, 0.47058824, 1.0]];  // green
-
-                case y <= gap * (4 / 5):
-                    return [3, [0.65098039, 0.3372549, 0.06666667, 1.0]]; // brown 
-
-                default:
-                    return [4, [1.0, 1.0, 1.0, 1.0]]; // white
+              default:
+              return [5,  [0.93333333, 0.04705882, 0.01568627, 1.0]];
             }
+          } else if (chosen=='sand') {
+            // default
+            switch (true) {
+              case y <= gap*(1/5):
+              return [1, [0.62745098, 0.33333333, 0.22745098, 1.0]];
+              
+              case y <= gap*(2/5):
+              return [2, [0.65098039, 0.45490196, 0.34901961, 1.0]];
+              
+              case y <= gap*(3/5):
+              return [3, [0.74901961, 0.60784314, 0.4745098, 1.0]];
+
+              case y <= gap*(4/5):
+              return [4, [0.85098039, 0.76862745, 0.6627451, 1.0]];
+
+              default:
+              return [5,  [0.96078431, 0.91372549, 0.81568627, 1.0]];
+            }
+          } else if (chosen=='jungle') {
+            switch (true) {
+              case y <= gap*(1/5):
+              return [1, [0.25098039, 0.29803922, 0.12156863, 1.0]];
+              
+              case y <= gap*(2/5):
+              return [2, [0.30196078, 0.28235294, 0.14117647, 1.0]];
+              
+              case y <= gap*(3/5):
+              return [3, [0.36862745, 0.40784314, 0.15686275, 1.0]];
+
+              case y <= gap*(4/5):
+              return [4, [0.5254902, 0.55294118, 0.21568627, 1.0]];
+
+              default:
+              return [5, [0.62352941, 0.57254902, 0.36470588, 1.0]];
+            }
+          } else if (chosen=='frozen') {
+            switch (true) {
+              case y <= gap*(1/5):
+              return [1, [1.5, 1.5, 1.5, 1.0]]; // blue
+              
+              case y <= gap*(2/5):
+              return [2, [1.5, 1.5, 1.5, 1.0]];
+              
+              case y <= gap*(3/5):
+              return [3, [1.5, 1.5, 1.5, 1.0]]; 
+
+              case y <= gap*(4/5):
+              return [4, [1.5, 1.5, 1.5, 1.0]];
+
+              default:
+              return [5,  [1.5, 1.5, 1.5, 1.0]]; // white
+            }
+          } else { // default
+            // default
+            switch (true) {
+              case y <= gap*(1/5):
+              return [1, [0.26666667, 0.61960784, 1.0, 1.0]]; // blue
+              
+              case y <= gap*(2/5):
+              return [2, [0.85490196, 0.72941176, 0.31764706, 1.0]]; // sand
+              
+              case y <= gap*(3/5):
+              return [3, [0.16470588, 0.81176471, 0.26666667, 1.0]];  // green
+
+              case y <= gap*(4/5):
+              return [4, [0.65098039, 0.3372549, 0.06666667, 1.0]]; // brown 
+
+              default:
+              return [5,  [1.5, 1.5, 1.5, 1.0]]; // white
+            }
+          }
         }
         function generate(){
             // Fetch new values for the matrix
@@ -453,6 +556,10 @@
 
         // Finally, draw the scene
         drawScene();
+
+        document.getElementById('colors').addEventListener('change', () => {
+          drawScene();
+        })
     </script>
     <script src="./src/lookcontrols.js"></script>
     <script src="./src/lighting.js"></script>
