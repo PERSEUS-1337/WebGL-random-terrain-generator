@@ -109,45 +109,49 @@
             opacity: 100%;
         }
         #extra-controls {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            color: #000000;
-            z-index: 1;  /* Ensure the controls are above other elements */
-            background-color: rgba(255, 255, 255, 0.25);  /* Set a semi-transparent background */
-            padding: 10px;
-            font-size: 0.9em;
-            border: 1px solid #ccc;  /* Optional: add a border to help define the container */
-        }
-        
-        #text-controls {
-            opacity: 1;  /* Ensure text controls are fully opaque */
-        }
-				#info {
-					position: absolute;
-					bottom: 0px;
-					right: 20px;
-					z-index: 1;
-					color: black;
-					background-color: rgba(255, 255, 255, 0.25); /* Set a semi-transparent background */
-					padding: 10px;
-					font-size: 0.9em;
-					border: 1px solid #ccc;
-					text-align: right;
-					display: none; /* Initially hidden */
-				}
+          position: absolute;
+          bottom: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          color: #000000;
+          z-index: 1;
+          background-color: rgba(255, 255, 255, 0.5);
+          padding: 10px;
+          font-size: 0.9em;
+          border: 1px solid #ccc;
+          text-align: center;
+      }
+      
+      #text-controls {
+          display: inline-block;
+          opacity: 1;
+      }
 
-				#info.visible {
-						display: block; /* Displayed when visible class is added */
-				}
-				#info p {
-					margin: 2px 0; /* Adjust the values to your preference */
-					padding: 0; /* Optional: If there's any padding you want to reduce */
-					line-height: 1.2; /* Adjust the value to your preference */
-				}
-				.bold-number {
-					font-weight: bold;
-				}
+      #info {
+        position: absolute;
+        bottom: 0px;
+        right: 20px;
+        z-index: 1;
+        color: black;
+        background-color: rgba(255, 255, 255, 0.25); /* Set a semi-transparent background */
+        padding: 10px;
+        font-size: 0.9em;
+        border: 1px solid #ccc;
+        text-align: right;
+        display: none; /* Initially hidden */
+      }
+
+      #info.visible {
+          display: block; /* Displayed when visible class is added */
+      }
+      #info p {
+        margin: 2px 0; /* Adjust the values to your preference */
+        padding: 0; /* Optional: If there's any padding you want to reduce */
+        line-height: 1.2; /* Adjust the value to your preference */
+      }
+      .bold-number {
+        font-weight: bold;
+      }
     </style>
 </head>
 
@@ -211,7 +215,7 @@
             </select>
         </div>
     </div>
-    <div id="extra-controls" class="container-w-20 p-2 mb-3 rounded">
+    <!-- <div id="extra-controls" class="container-w-20 p-2 mb-3 rounded">
         <div id="text-controls">
             <h6>Camera Controls</h6>
             <hr>
@@ -220,8 +224,18 @@
             <p><b>Hold Left Click</b> to rotate camera.</p>
             <p><b>Scroll up/down</b> to zoom in/out.</p>
         </div>
-        <!-- Add your extra controls here -->
-    </div>
+        Add your extra controls here
+    </div> -->
+    <div id="extra-controls" class="container-w-20-shadow-lg p-2 mb-3 rounded">
+      <div id="text-controls">
+          <span><b>Camera Controls:</b> 
+            <b>W/A/S/D</b> to pan camera. 
+            <b>Q/E</b> to pan down or up. 
+            <b>Hold Left Click</b> to rotate camera. 
+            <b>Scroll up/down</b> to zoom in/out.</span>
+      </div>
+      <!-- Add your extra controls here -->
+  </div>
 		<div id="info" class="container-w-20 p-2 mb-3 rounded">
 			<h5>Parameters:</h5>
 			<p id="matrix-size-text">Size: <span class="bold-number"></span></p>
