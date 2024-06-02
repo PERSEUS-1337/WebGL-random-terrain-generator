@@ -104,6 +104,22 @@ function terrainInter(matx, n, anchors, count) {
   }
 }
 
+function calculateAverageHeight(matrix) {
+  let totalHeight = 0;
+  let numberOfElements = 0;
+
+  for (let i = 0; i < matrix.length; i++) {
+    for (let j = 0; j < matrix[i].length; j++) {
+      totalHeight += matrix[i][j];
+      numberOfElements++;
+    }
+  }
+
+  let averageHeight = totalHeight / numberOfElements;
+  averageHeight = parseFloat(averageHeight.toFixed(4));
+  return averageHeight;
+}
+
 // ### END OF FUNCTION DECLARATIONS
 
 // Define default values for the matrix
