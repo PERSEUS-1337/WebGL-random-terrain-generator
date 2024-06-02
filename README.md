@@ -1,7 +1,7 @@
 # Random Terrain Generator
 
 ## Overview
-Welcome to the **Random Terrain Generator** project! This application demonstrates how to generate random terrain using a combination of Python and WebGL. The terrains created can be exported for use in various applications such as game maps or sandbox world demonstrations.
+	This 3D Terrain Generation web application generates a 3D terrain using WebGL, HTML 5.0, and JavaScript for the course CMSC 161 - Interactive Computer Graphics. The application utilized a basic cube mesh as building blocks for an nxn plane. The application uses a Random Number Generator (RNG) system to assign heights to the cubes, giving the generated terrain varied elevations.
 
 ## Authors
 - Aron Resty Ramillano
@@ -12,12 +12,8 @@ Welcome to the **Random Terrain Generator** project! This application demonstrat
 ## Course
 This project was developed as part of the CMSC 161 Interactive Computer Graphics course.
 
-## Project Premise
-The goal of this project is to create a tool that generates random terrains, which can be visualized using WebGL. The generated terrains are intended to be versatile and suitable for use in games, simulations, or any other context requiring dynamically created landscapes.
-
 ## Technologies Used
-- **Python**: Used for the random number generation (RNG) part of the terrain generation process.
-- **JavaScript**: Used for implementing the WebGL rendering and visualization of the generated terrain.
+- **JavaScript**: Used for implementing the WebGL rendering, visualization, and generation of the terrain.
 
 ## Features
 - **Random Terrain Generation**: Generates unique terrains each time, ensuring diverse landscapes.
@@ -26,8 +22,6 @@ The goal of this project is to create a tool that generates random terrains, whi
 
 ## Installation
 ### Prerequisites
-- Python 3.x
-- Node.js
 - A modern web browser that supports WebGL
 
 ### Setup
@@ -36,34 +30,35 @@ The goal of this project is to create a tool that generates random terrains, whi
    git clone https://github.com/PERSEUS-1337/WebGL-random-terrain-generator.git
    cd WebGL-random-terrain-generator
    ```
-
-2. **Install Python dependencies**:
-   ```sh
-   pip install -r requirements.txt
-   ```
-
-3. **Install JavaScript dependencies**:
-   ```sh
-   npm install
-   ```
+2. **Open index.html with a browser.**
 
 ## Usage
-1. **Generate Terrain using Python**:
-   ```sh
-   python generate_terrain.py
-   ```
-   This script will generate the terrain data and save it to a file that can be read by the WebGL application.
 
-2. **Start the WebGL Application**:
-   ```sh
-   npm start
-   ```
-   This will start a local web server and open the WebGL application in your default web browser.
-
-3. **View and Export Terrain**:
-   - Use the controls in the WebGL application to navigate and view the generated terrain.
-   - Use the export functionality to save the terrain for use in other applications.
-
+1. **Main Viewport**
+- Move the camera using WASD for forward, left, back, and right movements respectively.
+- Press/hold Q/E to fly down and up respectively.
+- Press and hold left click (Mouse 1) in the viewport to rotate the model manually.
+- Scroll in and out to zoom in and out.
+- In the Control Panel, under Camera Controls, there are two buttons for camera movement:
+   -- ```Auto Rotate``` rotates the model in a loop.
+   -- ```Reset Camera``` returns the position of the camera to its initial placement.
+2. **Control Panel - Terrain Settings**
+- Matrix Size dictates the nxn size of the map to be generated. The default is 50.
+- Max Elevation dictates the maximum elevation, 10 being the default. Higher elevations may result in surreal terrains.
+- Min Elevation dictates the minimum elevation possible, 0 being the default.
+- Anchor Percent dictates how many of the cubes will act as points to use for height estimation.
+- Closest Anchor Count dictates how many of the nearest anchors will be used for interpolating a cube’s height.
+- Press regenerate to regenerate the terrain using the settings provided. Higher values may take longer to generate. 
+3. **Control Panel - Day/Night Controls**
+- Slider displays the current time and can be dragged left or right to adjust the sun’s position.
+- Pressing the Start Day/Night Cycle button will animate the movement of the sun. 
+4. **Control Panel - Presets**
+   Presets are pre-determined values for the terrain settings above. Choosing a preset changes the values in the terrain settings field. Press generate preset to enact the changes, or modify the values first and press regenerate instead.
+   Current Presets: Default, Bigger, Recommended Maximum, Superflat Snow 
+5. **Terrain Palette**
+   Changes the color palette used by the generator. Takes effect immediately, no need to regenerate/generate.
+   Current Palettes: Default, Sand, Jungle, Frozen, Heatmap
+   
 ## Contributing
 Contributions are welcome! Please fork the repository and submit a pull request for any enhancements or bug fixes.
 
