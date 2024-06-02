@@ -29,16 +29,20 @@ function getRandomFloat(max) {
   return Math.random() * max;
 }
 
+function getRandomFloatInRange(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
 function getRandomInt(max) {
   return Math.floor(Math.random() * max);
 }
 
-function getRandomCoordinates(n, count, max) {
+function getRandomCoordinates(n, count, min, max) {
   let coordinates = [];
   while (coordinates.length < count) {
     let x = getRandomInt(n);
     let y = getRandomInt(n);
-    let elevation = getRandomFloat(max);
+    let elevation = getRandomFloatInRange(min, max);
     let key = `${x},${y}`;
     if (!coordinates.some((coord) => coord.key === key)) {
       coordinates.push({ x, y, elevation, key });
@@ -46,6 +50,9 @@ function getRandomCoordinates(n, count, max) {
   }
   return coordinates;
 }
+
+
+
 
 // Function to populate matrix with elevations at the specified coordinates
 function populateMatx(matx, coordinates) {
@@ -102,6 +109,7 @@ function terrainInter(matx, n, anchors, count) {
 // Define default values for the matrix
 let N = 50;
 let MAX_ELEV = 25;
+let MIN_ELEV = 0;
 let ANCHOR_PERCENT = 0.01;
 let CLOSEST_ANCHOR_COUNT = 4;
 
@@ -110,6 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Extract Values from HTML
   N = parseInt(document.getElementById("matrix-size").value);
   MAX_ELEV = parseInt(document.getElementById("max-elevation").value);
+  MIN_ELEV = parseInt(document.getElementById("min-elevation").value);
   ANCHOR_PERCENT = parseFloat(document.getElementById("anchor-percent").value);
   CLOSEST_ANCHOR_COUNT = parseFloat(
     document.getElementById("closest-anchor-count").value
@@ -117,7 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initialize the matrices
   let anchorCount = Math.floor(N * N * ANCHOR_PERCENT);
-  let randomCoordinates = getRandomCoordinates(N, anchorCount, MAX_ELEV);
+  let randomCoordinates = getRandomCoordinates(N, anchorCount, MIN_ELEV, MAX_ELEV);
   let randMatx = Array.from({ length: N }, () => Array(N).fill(0));
   populateMatx(randMatx, randomCoordinates);
   terrainInter(randMatx, N, randomCoordinates, CLOSEST_ANCHOR_COUNT);
@@ -129,11 +138,17 @@ document.addEventListener("DOMContentLoaded", () => {
     // Fetch new values for the matrix
     N = parseInt(document.getElementById("matrix-size").value);
     MAX_ELEV = parseInt(document.getElementById("max-elevation").value);
+    MIN_ELEV = parseInt(document.getElementById("min-elevation").value);
     ANCHOR_PERCENT = parseFloat(document.getElementById("anchor-percent").value);
     CLOSEST_ANCHOR_COUNT = parseFloat(document.getElementById("closest-anchor-count").value);
     // Reinitialize the matrices
     anchorCount = Math.floor(N * N * ANCHOR_PERCENT);
-    randomCoordinates = getRandomCoordinates(N, anchorCount, MAX_ELEV);
+    randomCoordinates = getRandomCoordinates(
+      N,
+      anchorCount,
+      MIN_ELEV,
+      MAX_ELEV
+    );
     randMatx = Array.from({ length: N }, () => Array(N).fill(0));
     populateMatx(randMatx, randomCoordinates);
     terrainInter(randMatx, N, randomCoordinates, CLOSEST_ANCHOR_COUNT);
