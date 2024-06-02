@@ -115,6 +115,11 @@
         <input class='range' type="range" id="timeSlider" min="0" max="1440" step="1" value="720">
         <br>
         <button id="dayNightCycle" class="btn btn-primary">Start Day/Night Cycle</button>
+
+        <br><br>
+        <button id="autoRotate" class="btn btn-primary">Start Auto Rotate</button>
+        <br><br>
+        <button id="resetCam" class="btn btn-primary">Reset Camera</button>
     </div>
     <canvas id="main_canvas" width="1400" height="720"></canvas>
     <script src="./src/rng.js"></script>
@@ -148,6 +153,9 @@
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.enable(gl.DEPTH_TEST);
 
+        var numCubes = parseFloat(document.getElementById("matrix-size").value);
+        const cubeSize = 0.2;
+
         var modelMatrix;
         var viewMatrix;
         var projectionMatrix;
@@ -163,8 +171,8 @@
         gl.uniformMatrix4fv(uProjectionMatrixPointer, false, projectionMatrix);
 
         /**START VIEW MATRIX SPECIFICATION**/
-        var lookAtPoint = [-5.0, 0.0, -5.0, 1.0];              //where the camera is looking
-        var eyePoint = [6.0, 5.0, -15.0, 1.0];              //where the camera is placed
+        var lookAtPoint = [-(numCubes*cubeSize)/2, 0.0, -(numCubes*cubeSize)/2, 1.0];   //where the camera is looking
+        var eyePoint = [-(numCubes*cubeSize)*2, (numCubes*cubeSize), -(numCubes*cubeSize)*2, 1.0];  //where the camera is placed
         var upVector = [0.0, 1.0, 0.0, 0.0];              //orientation of the camera
 
         viewMatrix = mat4.create();
@@ -217,9 +225,6 @@
             1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0,
             -1.0, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 1.0
         ];
-
-        var numCubes = parseFloat(document.getElementById("matrix-size").value);
-        const cubeSize = 0.2;
 
         var allNormals = [];
         for (var i = 0; i < numCubes * numCubes; i++) {
@@ -371,6 +376,7 @@
 						}
 					}
 					console.log(randMatx)
+                    resetCamera();
 					drawScene();
 				});
 						
