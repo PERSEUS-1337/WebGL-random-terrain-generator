@@ -97,9 +97,12 @@
         <br>
         <label for="max-elevation">Max Elevation:</label>
         <input type="number" id="max-elevation" value="10" min="1" step="1">
+				<br>
+        <label for="min-elevation">Min Elevation:</label>
+        <input type="number" id="min-elevation" value="0" min="0" step="1">
         <br>
         <label for="anchor-percent">Anchor Percent:</label>
-        <input type="number" id="anchor-percent" value="0.01" min="0.001" max="1" step="0.001">
+        <input type="number" id="anchor-percent" value="0.01" max="1" step="0.0005">
         <br>
         <label for="closest-anchor-count">Closest Anchor Count:</label>
         <input type="number" id="closest-anchor-count" value="4" min="1" step="1">
@@ -230,10 +233,11 @@
 
         // RNG HEIGHT GENERATION
         MAX_ELEV = parseFloat(document.getElementById("max-elevation").value);
+        MIN_ELEV = parseFloat(document.getElementById("min-elevation").value);
         ANCHOR_PERCENT = parseFloat(document.getElementById("anchor-percent").value);
         CLOSEST_ANCHOR_COUNT = parseFloat(document.getElementById("closest-anchor-count").value);
         let anchorCount = Math.floor(numCubes * numCubes * ANCHOR_PERCENT);
-        let randomCoordinates = getRandomCoordinates(numCubes, anchorCount, MAX_ELEV);
+        let randomCoordinates = getRandomCoordinates(numCubes, anchorCount, MIN_ELEV, MAX_ELEV);
         let randMatx = Array.from({ length: numCubes }, () => Array(numCubes).fill(0));
         populateMatx(randMatx, randomCoordinates);
         terrainInter(randMatx, numCubes, randomCoordinates, CLOSEST_ANCHOR_COUNT);
@@ -313,8 +317,6 @@
           }
         }
 
-        drawScene();
-
         function getHeightGaps(mat, gap) {
             var gapRet = [0,0,0,0,0];
             
@@ -346,44 +348,45 @@
         }
 
         document.getElementById("regenerate-button").addEventListener("click", () => {
-            // Fetch new values for the matrix
-            numCubes = parseInt(document.getElementById("matrix-size").value);
-            MAX_ELEV = parseInt(document.getElementById("max-elevation").value);
-            ANCHOR_PERCENT = parseFloat(document.getElementById("anchor-percent").value);
-            CLOSEST_ANCHOR_COUNT = parseInt(
-                document.getElementById("closest-anchor-count").value
-            );
+					// Fetch new values for the matrix
+					numCubes = parseInt(document.getElementById("matrix-size").value);
+					MAX_ELEV = parseInt(document.getElementById("max-elevation").value);
+					MIN_ELEV = parseInt(document.getElementById("min-elevation").value);
+					ANCHOR_PERCENT = parseFloat(document.getElementById("anchor-percent").value);
+					CLOSEST_ANCHOR_COUNT = parseInt(
+							document.getElementById("closest-anchor-count").value
+					);
 
-            // Reinitialize the matrices
-            anchorCount = Math.floor(numCubes * numCubes * ANCHOR_PERCENT);
-            randomCoordinates = getRandomCoordinates(numCubes, anchorCount, MAX_ELEV);
-            randMatx = Array.from({ length: numCubes }, () => Array(numCubes).fill(0));
-            populateMatx(randMatx, randomCoordinates);
-            terrainInter(randMatx, numCubes, randomCoordinates, CLOSEST_ANCHOR_COUNT);
+					// Reinitialize the matrices
+					anchorCount = Math.floor(numCubes * numCubes * ANCHOR_PERCENT);
+					randomCoordinates = getRandomCoordinates(numCubes, anchorCount, MIN_ELEV, MAX_ELEV);
+					randMatx = Array.from({ length: numCubes }, () => Array(numCubes).fill(0));
+					populateMatx(randMatx, randomCoordinates);
+					terrainInter(randMatx, numCubes, randomCoordinates, CLOSEST_ANCHOR_COUNT);
 
-            offsets = [];
-            for (var row = 0; row < numCubes; row++) {
-                for (var col = 0; col < numCubes; col++) {
-                var height = randMatx[row][col];
-                var x = col * cubeSize * 1 - numCubes * cubeSize;
-                var y = height * cubeSize; // Apply height directly
-                // console.log(y);
-                var z = row * cubeSize * 1 - numCubes * cubeSize;
-                offsets.push(x, y, z);
-                }
-            }
-            console.log(randMatx)
-            
-            lookAtPoint = [-(numCubes*cubeSize)/2, 0.0, -(numCubes*cubeSize)/2, 1.0];  
-            eyePoint = [-(numCubes*cubeSize)*2, (numCubes*cubeSize), -(numCubes*cubeSize)*2, 1.0];
-            viewMatrix = mat4.lookAt(mat4.create(), eyePoint, lookAtPoint, upVector);
-            gl.uniformMatrix4fv(uViewMatrixPointer, false, viewMatrix);
-            
-            drawScene();
-            });
+					offsets = [];
+					for (var row = 0; row < numCubes; row++) {
+						for (var col = 0; col < numCubes; col++) {
+							var height = randMatx[row][col];
+							var x = col * cubeSize * 1 - numCubes * cubeSize;
+							var y = height * cubeSize; // Apply height directly
+							// console.log(y);
+							var z = row * cubeSize * 1 - numCubes * cubeSize;
+							offsets.push(x, y, z);
+						}
+					}
+					console.log(randMatx)
 
+                    lookAtPoint = [-(numCubes*cubeSize)/2, 0.0, -(numCubes*cubeSize)/2, 1.0];  
+                    eyePoint = [-(numCubes*cubeSize)*2, (numCubes*cubeSize), -(numCubes*cubeSize)*2, 1.0];
+                    viewMatrix = mat4.lookAt(mat4.create(), eyePoint, lookAtPoint, upVector);
+                    gl.uniformMatrix4fv(uViewMatrixPointer, false, viewMatrix);
+
+					drawScene();
+				});
+						
+				// Finally, draw the scene
         drawScene();
-
     </script>
     <script src="./src/lookcontrols.js"></script>
     <script src="./src/lighting.js"></script>
