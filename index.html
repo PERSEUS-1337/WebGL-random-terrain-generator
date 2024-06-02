@@ -6,6 +6,7 @@
       attribute vec4 aPosition;
       attribute vec4 aNormal;
       attribute vec3 aOffset;  // Attribute for instance offset
+      attribute vec4 color;
 
       uniform mat4 uViewMatrix;
       uniform mat4 uProjectionMatrix;
@@ -14,6 +15,8 @@
       uniform vec4 uMaterialDiffuseColor;
       uniform vec4 uLightDiffuseColor;
       uniform vec4 uLightDirectionVector;
+
+      uniform vec4 uAmbientLight;
 
       varying vec4 vDiffuseColor;
 
@@ -29,7 +32,7 @@
 
         float lambertCoefficient = max(dot(-normalized_uLightDirectionVector, normalized_aNormalVector), 0.0);
 
-        vec4 diffuseColor =  uMaterialDiffuseColor * uLightDiffuseColor * lambertCoefficient;
+        vec4 diffuseColor = (uAmbientLight + uMaterialDiffuseColor * uLightDiffuseColor * lambertCoefficient)*color;
 
         vDiffuseColor = vec4(diffuseColor.r, diffuseColor.g, diffuseColor.b, 1.0);
       }
@@ -47,6 +50,7 @@
     <script src="./lib/webgl-utils.js"></script>
     <script src="./lib/webgl-debug.js"></script>
     <script src="./lib/gl-matrix-min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -70,18 +74,20 @@
             top: 0;
             left: 0;
         }
-        .controls {
+        #controls {
             position: absolute;
             top: 20px; /* Adjust the top position as needed */
             left: 20px; /* Adjust the left position as needed */
-            color: #ffffff; /* White text color */
+            color: #000000; /* White text color */
             z-index: 1; /* Ensure controls render on top of the canvas */
+            background-color: white;
+            padding: 10px;
         }
     </style>
 </head>
 
 <body>
-    <div class="controls">
+    <div id="controls"  class="container-w-20-shadow-lg p-3 mb-5 bg-white rounded">
         <label for="matrix-size">Matrix Size (N):</label>
         <input type="number" id="matrix-size" value="50" min="10" step="1">
         <br>
@@ -94,7 +100,14 @@
         <label for="closest-anchor-count">Closest Anchor Count:</label>
         <input type="number" id="closest-anchor-count" value="4" min="1" step="1">
         <br>
-        <button id="regen-button">Regenerate Only</button>
+        <button id="regenerate-button">Regenerate</button>
+        
+        <br><br>
+        <label>Time:</label>
+        <span id="timeDisplay">12:00</span>
+        <input class='range' type="range" id="timeSlider" min="0" max="1440" step="1" value="720">
+        <br>
+        <button id="dayNightCycle">Start Day/Night Cycle</button>
     </div>
     <canvas id="main_canvas" width="1400" height="720"></canvas>
     <script src="./src/rng.js"></script>
@@ -113,6 +126,7 @@
         var aPositionPointer = gl.getAttribLocation(program, "aPosition");
         var aNormalPointer = gl.getAttribLocation(program, "aNormal");
         var aOffsetPointer = gl.getAttribLocation(program, "aOffset");
+        var colorPointer = gl.getAttribLocation(program, "color");
 
         var uViewMatrixPointer = gl.getUniformLocation(program, "uViewMatrix");
         var uProjectionMatrixPointer = gl.getUniformLocation(program, "uProjectionMatrix");
@@ -120,8 +134,10 @@
         var uMaterialDiffuseColorPtr = gl.getUniformLocation(program, "uMaterialDiffuseColor");
         var uLightDiffuseColorPtr = gl.getUniformLocation(program, "uLightDiffuseColor");
         var uLightDirectionVectorPtr = gl.getUniformLocation(program, "uLightDirectionVector");
+        var uAmbientLightPtr = gl.getUniformLocation(program, "uAmbientLight");
 
-        gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        var skyColor = [0.8235, 0.9686, 1, 1];
+        gl.clearColor(skyColor[0], skyColor[1], skyColor[2], skyColor[3]);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.enable(gl.DEPTH_TEST);
 
@@ -157,9 +173,14 @@
         mat4.transpose(normalMatrix, normalMatrix);
         gl.uniformMatrix4fv(uNormalMatrixPointer, false, normalMatrix);
 
+        var lightDiffuseColor = [1.0, 1.0, 1.0, 1.0];
+        var lightDirection = [0, -1, 0.75, 0.0];
+        var lightAmbient = [0.1, 0.1, 0.1, 1.0];
+
         gl.uniform4f(uMaterialDiffuseColorPtr, 0.596, 0.576, 0.855, 1.0);
-        gl.uniform4f(uLightDiffuseColorPtr, 1.0, 1.0, 1.0, 1.0);
-        gl.uniform4f(uLightDirectionVectorPtr, -5.0, -3.0, 2.0, 0.0);
+        gl.uniform4fv(uLightDiffuseColorPtr, lightDiffuseColor);
+        gl.uniform4fv(uLightDirectionVectorPtr, lightDirection);
+        gl.uniform4fv(uAmbientLightPtr, lightAmbient);
 
         var vertices = [
             -1.0, -1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0,
@@ -207,67 +228,115 @@
         let randMatx = Array.from({ length: numCubes }, () => Array(numCubes).fill(0));
         populateMatx(randMatx, randomCoordinates);
         terrainInter(randMatx, numCubes, randomCoordinates, CLOSEST_ANCHOR_COUNT);
-
-        var offsets = [];
-        for (var row = 0; row < numCubes; row++) {
-            for (var col = 0; col < numCubes; col++) {
-                var height = randMatx[row][col]
-                var x = col * cubeSize * 1 - numCubes * cubeSize;
-                var y = height * cubeSize; // Apply height directly
-                var z = row * cubeSize * 1 - numCubes * cubeSize;
-                offsets.push(x, y, z);
-            }
-        }
-        
-        var cubeColors = [];
-        // Generate random colors for each cube
-        for (var i = 0; i < numCubes*numCubes; i++) {
-            var color = [Math.random(), Math.random(), Math.random(), 1.0];
-            cubeColors.push(color);
-        }
     
+        var colorBuffer = gl.createBuffer();
         var vertexBuffer = gl.createBuffer();
         var indexBuffer = gl.createBuffer();
         var normalBuffer = gl.createBuffer();
         var offsetBuffer = gl.createBuffer();
 
         function drawScene() {
-            gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+          var offsets = [];
+          var colors=[];
+          var gap = MAX_ELEV*cubeSize;
+          // gap = ((numCubes*numCubes)/5)*0.1;
+          var gaps = getHeightGaps(randMatx, gap);
+          var gapCount = [0,0,0,0,0];
+          var flag = [0,0,0,0,0];
+          var sorted = [];
 
-            gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(allNormals), gl.STATIC_DRAW);
+          for (var row = 0; row < numCubes; row++) {
+              for (var col = 0; col < numCubes; col++) {
+                  var height = randMatx[row][col]
+                  var x = col * cubeSize * 1 - numCubes * cubeSize;
+                  var y = height * cubeSize; // Apply height directly
+                  var z = row * cubeSize * 1 - numCubes * cubeSize;
+                  offsets.push(x, y, z);
 
-            gl.bindBuffer(gl.ARRAY_BUFFER, offsetBuffer);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(offsets), gl.STATIC_DRAW);
+                  var colorResult = getColor(y, gap);
+                  var colorList = colorResult[1].map(function (value) { 
+                      return value * (y);
+                  });
+                  colorList.forEach((value) => colors.push(value));
+              }
+          }
 
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+          gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 
-            gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-            gl.vertexAttribPointer(aPositionPointer, 4, gl.FLOAT, false, 0, 0);
-            gl.enableVertexAttribArray(aPositionPointer);
+          gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(allNormals), gl.STATIC_DRAW);
 
-            gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
-            gl.vertexAttribPointer(aNormalPointer, 4, gl.FLOAT, false, 0, 0);
-            gl.enableVertexAttribArray(aNormalPointer);
+          gl.bindBuffer(gl.ARRAY_BUFFER, offsetBuffer);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(offsets), gl.STATIC_DRAW);
 
-            gl.bindBuffer(gl.ARRAY_BUFFER, offsetBuffer);
-            gl.vertexAttribPointer(aOffsetPointer, 3, gl.FLOAT, false, 0, 0);
-            gl.enableVertexAttribArray(aOffsetPointer);
-            gl.vertexAttribDivisor(aOffsetPointer, 1);  // This tells WebGL to use this attribute as instanced data
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+          gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
 
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+          gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+          gl.vertexAttribPointer(aPositionPointer, 4, gl.FLOAT, false, 0, 0);
+          gl.enableVertexAttribArray(aPositionPointer);
 
-            if (gl.drawArraysInstanced) {
-                gl.drawElementsInstanced(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0, numCubes * numCubes);
-            } else {
-                var ext = gl.getExtension("ANGLE_instanced_arrays");
-                ext.drawElementsInstancedANGLE(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0, numCubes * numCubes);
+          gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+          gl.vertexAttribPointer(aNormalPointer, 4, gl.FLOAT, false, 0, 0);
+          gl.enableVertexAttribArray(aNormalPointer);
+
+          gl.bindBuffer(gl.ARRAY_BUFFER, offsetBuffer);
+          gl.vertexAttribPointer(aOffsetPointer, 3, gl.FLOAT, false, 0, 0);
+          gl.enableVertexAttribArray(aOffsetPointer);
+          gl.vertexAttribDivisor(aOffsetPointer, 1);  // This tells WebGL to use this attribute as instanced data
+
+          // ADD COLORS
+          gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+          gl.enableVertexAttribArray(colorPointer);
+          gl.vertexAttribPointer(colorPointer, 4, gl.FLOAT, false, 0, 0);
+          gl.vertexAttribDivisor(colorPointer, 1);
+
+          gl.clearColor(skyColor[0], skyColor[1], skyColor[2], skyColor[3]);
+          gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+          if (gl.drawArraysInstanced) {
+              gl.drawElementsInstanced(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0, numCubes * numCubes);
+          } else {
+              var ext = gl.getExtension("ANGLE_instanced_arrays");
+              ext.drawElementsInstancedANGLE(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0, numCubes * numCubes);
+          }
+        }
+
+        drawScene();
+
+        function getHeightGaps(mat, gap) {
+            var gapRet = [0,0,0,0,0];
+            
+            for (let i=0; i<mat.length; i++) {
+                for (let j=0; j<mat[i].length; j++) {
+                    gapRet[getColor((mat[i][j]*cubeSize), gap)[0]]++;
+                }
+            }
+            return gapRet;
+        }
+
+        function getColor(y, gap) {
+            switch (true) {
+                case y <= gap*(1/5):
+                return [0, [0.35686275, 0.7372549, 1.0, 1.0]]; // dark then light blue
+                
+                case y <= gap*(2/5):
+                return [2, [0.69411765, 0.57254902, 0.39215686, 1.0]]; // sand
+                
+                case y <= gap*(3/5):
+                return [1, [0.25098039, 0.64705882, 0.47058824, 1.0]];  // green
+
+                case y <= gap*(4/5):
+                return [3, [0.65098039, 0.3372549, 0.06666667, 1.0]]; // brown 
+
+                default:
+                return [4,  [1.0, 1.0, 1.0, 1.0]]; // white
             }
         }
 
-        document.getElementById("regen-button").addEventListener("click", () => {
+        document.getElementById("regenerate-button").addEventListener("click", () => {
             // Fetch new values for the matrix
             numCubes = parseInt(document.getElementById("matrix-size").value);
             MAX_ELEV = parseInt(document.getElementById("max-elevation").value);
@@ -302,6 +371,7 @@
 
     </script>
     <script src="./src/lookcontrols.js"></script>
+    <script src="./src/lighting.js"></script>
 
 </body>
 </html>
