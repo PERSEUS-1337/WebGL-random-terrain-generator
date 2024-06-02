@@ -129,11 +129,16 @@
 					right: 20px;
 					z-index: 1;
 					color: black;
-					background-color: rgba(255, 255, 255, 0.25);  /* Set a semi-transparent background */
+					background-color: rgba(255, 255, 255, 0.25); /* Set a semi-transparent background */
 					padding: 10px;
 					font-size: 0.9em;
-					border: 1px solid #ccc;  
+					border: 1px solid #ccc;
 					text-align: right;
+					display: none; /* Initially hidden */
+				}
+
+				#info.visible {
+						display: block; /* Displayed when visible class is added */
 				}
 				#info p {
 					margin: 2px 0; /* Adjust the values to your preference */
@@ -149,11 +154,12 @@
 <body>
     <div id="controls" class="opacity-50 container-w-20-shadow-lg p-3 mb-5 bg-white rounded">
         <h5> Control Panel </h5>
-        Controls will fade out. <br>
-        Hover mouse over to display controls again.
+        Controls will <b>fade out</b>. <br>
+        <b>Hover mouse</b> over to display controls again. <br>
+				Press <b>F</b> to display statistics.
         <hr>
         <h5>Terrain Settings</h5>
-        Hit generate to take effect. <br>
+        Hit <b>generate</b> to take effect. <br>
         <label for="matrix-size">Matrix Size (N):</label>
         <input type="number" id="matrix-size" value="50" min="10" step="1">
         <br>
@@ -204,8 +210,6 @@
                 <option value="heatmap">Heatmap</option>
             </select>
         </div>
-				<hr>
-				<h5>Import / Export Map</h5>
     </div>
     <div id="extra-controls" class="container-w-20 p-2 mb-3 rounded">
         <div id="text-controls">
@@ -219,13 +223,20 @@
         <!-- Add your extra controls here -->
     </div>
 		<div id="info" class="container-w-20 p-2 mb-3 rounded">
+			<h5>Parameters:</h5>
 			<p id="matrix-size-text">Size: <span class="bold-number"></span></p>
 			<p id="max-elevation-text">Max Elevation: <span class="bold-number"></span></p>
 			<p id="min-elevation-text">Min Elevation: <span class="bold-number"></span></p>
 			<p id="anchor-percent-text">Anchor Percent: <span class="bold-number"></span></p>
+			<hr>
+			<h5>Map Values:</h5>
 			<p id="closest-anchor-count-text">Closest Anchor Count: <span class="bold-number"></span></p>
 			<p id="anchor-count-text">Anchor Count: <span class="bold-number"></span></p>
 			<p id="avg-height-text">Average Height: <span class="bold-number"></span></p>
+			<hr>
+			<h5>Camera Values:</h5>
+			<p id="look-at-point-text">Look At Point: <span class="bold-number"></span></p>
+			<p id="eye-point-text">Eye Point: <span class="bold-number"></span></p>
 		</div>
     <canvas id="main_canvas" width="1400" height="720"></canvas>
     <script src="./src/rng.js"></script>
@@ -446,6 +457,15 @@
 				function displayHud() {
 					// Update the text in the HTML with bold numbers
 					let avgHeight = calculateAverageHeight(randMatx);
+					
+					// Ensure each number in the array is formatted to 4 decimal places
+					let formattedLookAtPoint = lookAtPoint.map(num => num.toFixed(4));
+					let formattedEyePoint = eyePoint.map(num => num.toFixed(4));
+					
+					// Join the formatted numbers into a single string, e.g., "[0.0000, 1.0000, 0.0000, 0.0000]"
+					const formattedLookAtPointText = `[${formattedLookAtPoint.join(', ')}]`;
+					const formattedEyePointText = `[${formattedEyePoint.join(', ')}]`;
+
 					document.querySelector("#matrix-size-text .bold-number").textContent = numCubes;
 					document.querySelector("#max-elevation-text .bold-number").textContent = MAX_ELEV;
 					document.querySelector("#min-elevation-text .bold-number").textContent = MIN_ELEV;
@@ -453,7 +473,24 @@
 					document.querySelector("#closest-anchor-count-text .bold-number").textContent = CLOSEST_ANCHOR_COUNT;
 					document.querySelector("#anchor-count-text .bold-number").textContent = anchorCount;
 					document.querySelector("#avg-height-text .bold-number").textContent = avgHeight;
+					document.querySelector("#look-at-point-text .bold-number").textContent = formattedLookAtPointText;
+					document.querySelector("#eye-point-text .bold-number").textContent = formattedEyePointText;
 				}
+
+				// Function to toggle the visibility of the info div
+				function toggleInfoVisibility() {
+					const infoDiv = document.getElementById('info');
+					infoDiv.classList.toggle('visible');
+				}
+
+				// Event listener for the keydown event
+				document.addEventListener('keydown', function(event) {
+					// Check if the pressed key is F
+					if (event.key === 'f' || event.key === 'F') {
+							toggleInfoVisibility();
+					}
+				});
+
 
 
 
