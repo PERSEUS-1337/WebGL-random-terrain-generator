@@ -7,7 +7,7 @@ const darkBlue = [0.0824, 0.1333, 0.2196, 1]; // #152238 RGBA(21, 34, 56, 1)
 const skyGradient = [(skyBlue[0]-darkBlue[0])/(totalMinutesInADay/2), (skyBlue[1]-darkBlue[1])/(totalMinutesInADay/2), (skyBlue[2]-darkBlue[2])/(totalMinutesInADay/2)];
 
 let active = false;
-let timeRatio = 41.67;
+let timeRatio = 10; // Default at 41.67
 let mins;
 
 function getLightingColorBasedOnTime(timeInMinutes) {

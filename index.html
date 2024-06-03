@@ -253,6 +253,7 @@
 			<p id="closest-anchor-count-text">Closest Anchor Count: <span class="bold-number"></span></p>
 			<p id="anchor-count-text">Anchor Count: <span class="bold-number"></span></p>
 			<p id="avg-height-text">Average Height: <span class="bold-number"></span></p>
+			<p id="light-val-text">Time of Day: <span class="bold-number"></span></p>
 			<hr>
 			<h5>Camera Values:</h5>
 			<p id="look-at-point-text">Look At Point: <span class="bold-number"></span></p>
@@ -477,6 +478,8 @@
 				function displayHud() {
 					// Update the text in the HTML with bold numbers
 					let avgHeight = calculateAverageHeight(randMatx);
+
+          var currTime = document.getElementById('timeDisplay').textContent;
 					
 					// Ensure each number in the array is formatted to 4 decimal places
 					let formattedLookAtPoint = lookAtPoint.map(num => num.toFixed(4));
@@ -486,6 +489,8 @@
 					const formattedLookAtPointText = `[${formattedLookAtPoint.join(', ')}]`;
 					const formattedEyePointText = `[${formattedEyePoint.join(', ')}]`;
 
+
+
 					document.querySelector("#matrix-size-text .bold-number").textContent = numCubes;
 					document.querySelector("#max-elevation-text .bold-number").textContent = MAX_ELEV;
 					document.querySelector("#min-elevation-text .bold-number").textContent = MIN_ELEV;
@@ -493,6 +498,7 @@
 					document.querySelector("#closest-anchor-count-text .bold-number").textContent = CLOSEST_ANCHOR_COUNT;
 					document.querySelector("#anchor-count-text .bold-number").textContent = anchorCount;
 					document.querySelector("#avg-height-text .bold-number").textContent = avgHeight;
+					document.querySelector("#light-val-text .bold-number").textContent = currTime;
 					document.querySelector("#look-at-point-text .bold-number").textContent = formattedLookAtPointText;
 					document.querySelector("#eye-point-text .bold-number").textContent = formattedEyePointText;
 				}
